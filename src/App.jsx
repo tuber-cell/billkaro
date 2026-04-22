@@ -1,4 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { auth, db, googleProvider } from "./lib/firebase";
+import { 
+  onAuthStateChanged, 
+  signOut, 
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail
+} from "firebase/auth";
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+
 
 const font = document.createElement("link");
 font.rel = "stylesheet";
@@ -57,13 +68,75 @@ export default function App() {
   const [items, setItems] = useState([emptyItem()]);
 
   // ── Payment / plan ────────────────────────────────────────────────────────────
+  // ── Firebase Auth & Pro Status ───────────────────────────────────────────────
   const [plan, setPlan] = useState(() => localStorage.getItem("bk_plan") || "free");
   const [invoiceCount, setInvoiceCount] = useState(() => parseInt(localStorage.getItem("bk_count") || "0", 10));
+  const [user, setUser] = useState(null);
+  const [dbPro, setDbPro] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
+  const [targetPlan, setTargetPlan] = useState(null);
 
-  const isPro = plan === "pro" || plan === "business";
-  const isBusiness = plan === "business";
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+      if (!u) setDbPro(false);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setDbPro(!!data.isPro);
+        if (data.isPro) {
+          localStorage.setItem("bk_plan", data.plan || "pro");
+          setPlan(data.plan || "pro");
+        } else {
+          // If Firestore says NOT pro, override local storage
+          localStorage.setItem("bk_plan", "free");
+          setPlan("free");
+        }
+      } else {
+        // New user or no data: default to free
+        setDbPro(false);
+        localStorage.setItem("bk_plan", "free");
+        setPlan("free");
+      }
+    });
+    return unsub;
+  }, [user]);
+
+  // Only consider them Pro if the cloud says so (if logged in) or the local plan is pro (if guest)
+  const isPro = user ? dbPro : (plan === "pro" || plan === "business");
+  const isBusiness = user ? (plan === "business" && dbPro) : (plan === "business");
+  
+  // High-value guest logic: 3 free invoices with NO watermark
+  // Show watermark only if: Not Pro AND (Logged in Free OR Out of Guest Invoices)
+  const showWatermark = !isPro && (user || invoiceCount >= FREE_LIMIT);
+
   const freeLeft = Math.max(0, FREE_LIMIT - invoiceCount);
-  const canDownload = isPro || freeLeft > 0;
+  const canDownload = isPro || (freeLeft > 0 && !user);
+
+  const handleLogout = () => {
+    signOut(auth);
+    localStorage.removeItem("bk_plan");
+    setPlan("free");
+    setDbPro(false);
+  };
+
+  const syncProStatus = async (uid, selectedPlan) => {
+    await setDoc(doc(db, "users", uid), {
+      isPro: true,
+      plan: selectedPlan,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    setDbPro(true);
+  };
+
 
   // ── Calculations ──────────────────────────────────────────────────────────────
   const calcItem = (item) => {
@@ -129,26 +202,36 @@ export default function App() {
   };
 
   // ── Razorpay ──────────────────────────────────────────────────────────────────
-  const openRazorpay = (targetPlan) => {
+  // ── Razorpay ──────────────────────────────────────────────────────────────────
+  const openRazorpay = (selectedPlan) => {
     if (!window.Razorpay) return alert("Payment gateway not loaded. Please refresh.");
-    const amount = targetPlan === "business" ? 39900 : 14900;
-    const desc = targetPlan === "business" ? "Business Plan — ₹399/month" : "Pro Plan — ₹149/month";
+    const amount = selectedPlan === "business" ? 39900 : 14900;
+    const desc = selectedPlan === "business" ? "Business Plan — ₹399/month" : "Pro Plan — ₹149/month";
+    
     const options = {
       key: RAZORPAY_KEY,
       amount,
       currency: "INR",
       name: "BillKaro",
       description: desc,
-      handler: (response) => {
-        localStorage.setItem("bk_plan", targetPlan);
-        setPlan(targetPlan);
-        doDownload();
+      handler: async (response) => {
+        if (user) {
+          await syncProStatus(user.uid, selectedPlan);
+          localStorage.setItem("bk_plan", selectedPlan);
+          setPlan(selectedPlan);
+          setStep("preview");
+        } else {
+          // If not logged in, show login modal and remember the plan
+          setTargetPlan(selectedPlan);
+          setShowLogin(true);
+        }
       },
       prefill: { name: seller.name, email: seller.email, contact: seller.phone },
       theme: { color: "#d4af37" },
     };
     new window.Razorpay(options).open();
   };
+
 
   const doDownload = () => {
     if (!isPro) {
@@ -168,14 +251,14 @@ export default function App() {
   // ── Styles ────────────────────────────────────────────────────────────────────
   const S = {
     page: { minHeight: "100vh", background: "linear-gradient(135deg, #0f1923 0%, #162032 50%, #0f1923 100%)", fontFamily: "'DM Sans', sans-serif", padding: "0 0 60px" },
-    header: { background: "linear-gradient(90deg, #0f1923, #1a2d45, #0f1923)", borderBottom: "1px solid rgba(212,175,55,0.3)", padding: "20px 40px", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    logo: { fontFamily: "'Playfair Display', serif", fontSize: 22, color: "#d4af37", letterSpacing: "0.05em" },
-    badge: { background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#d4af37", padding: "4px 12px", borderRadius: 20, fontSize: 11, letterSpacing: "0.1em" },
-    container: { maxWidth: 900, margin: "0 auto", padding: "40px 20px" },
-    card: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: "28px 32px", marginBottom: 20 },
-    secTitle: { fontFamily: "'Playfair Display', serif", fontSize: 16, color: "#d4af37", marginBottom: 20, paddingBottom: 10, borderBottom: "1px solid rgba(212,175,55,0.2)" },
-    label: { display: "block", fontSize: 11, color: "#8899aa", marginBottom: 6, letterSpacing: "0.08em", textTransform: "uppercase" },
-    input: { width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#e8edf2", fontSize: 14, outline: "none", fontFamily: "'DM Sans', sans-serif", transition: "border 0.2s", boxSizing: "border-box" },
+    header: { background: "rgba(15, 25, 35, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(212,175,55,0.3)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 },
+    logo: { fontFamily: "'Playfair Display', serif", fontSize: 24, color: "#d4af37", letterSpacing: "0.05em", fontWeight: 700 },
+    badge: { background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#d4af37", padding: "4px 12px", borderRadius: 20, fontSize: 11, letterSpacing: "0.1em", fontWeight: 600 },
+    container: { maxWidth: 1000, margin: "0 auto", padding: "40px 20px" },
+    card: { background: "rgba(255,255,255,0.03)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "28px 32px", marginBottom: 24, transition: "transform 0.3s ease, box-shadow 0.3s ease" },
+    secTitle: { fontFamily: "'Playfair Display', serif", fontSize: 18, color: "#d4af37", marginBottom: 24, paddingBottom: 10, borderBottom: "1px solid rgba(212,175,55,0.2)", display: "flex", alignItems: "center", gap: 10 },
+    label: { display: "block", fontSize: 11, color: "#8899aa", marginBottom: 8, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 },
+    input: { width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 10, padding: "12px 16px", color: "#e8edf2", fontSize: 14, outline: "none", fontFamily: "'DM Sans', sans-serif", transition: "all 0.3s ease", boxSizing: "border-box" },
     select: { width: "100%", background: "#1a2d45", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#e8edf2", fontSize: 14, outline: "none", fontFamily: "'DM Sans', sans-serif", boxSizing: "border-box" },
     btnPrimary: { background: "linear-gradient(135deg, #d4af37, #f0d060)", color: "#0f1923", border: "none", padding: "12px 28px", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
     btnSecondary: { background: "transparent", color: "#d4af37", border: "1px solid rgba(212,175,55,0.4)", padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
@@ -183,15 +266,174 @@ export default function App() {
     btnDanger: { background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)", padding: "6px 12px", borderRadius: 6, fontSize: 12, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
     btnAdd: { background: "rgba(212,175,55,0.08)", color: "#d4af37", border: "1px dashed rgba(212,175,55,0.3)", padding: "10px 20px", borderRadius: 8, fontSize: 13, cursor: "pointer", width: "100%", fontFamily: "'DM Sans', sans-serif", marginTop: 12 },
     errText: { color: "#ef4444", fontSize: 11, marginTop: 4 },
+    modal: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15, 25, 35, 0.9)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 },
+    modalContent: { background: "#1a2d45", border: "1px solid rgba(212,175,55,0.3)", borderRadius: 16, padding: "32px", maxWidth: 400, width: "100%", boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }
   };
+
+  // ── Auth Modal (Email & Google) ─────────────────────────────────────────────
+  const AuthModal = () => {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [isSignup, setIsSignup] = useState(false);
+    const [authLoading, setAuthLoading] = useState(false);
+
+    const [authError, setAuthError] = useState("");
+
+    const onEmailSubmit = async (e) => {
+      e.preventDefault();
+      if (!email || !password) return setAuthError("Please fill all fields");
+      setAuthLoading(true);
+      setAuthError("");
+      try {
+        let result;
+        if (isSignup) {
+          if (password.length < 6) throw new Error("Password must be at least 6 characters");
+          result = await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+          result = await signInWithEmailAndPassword(auth, email, password);
+        }
+        await handleAuthSuccess(result.user);
+      } catch (err) {
+        console.error(err);
+        let msg = "Authentication failed. ";
+        if (err.code === "auth/invalid-credential") msg = "Wrong email or password.";
+        if (err.code === "auth/email-already-in-use") msg = "Email already registered. Try logging in!";
+        if (err.code === "auth/user-not-found") msg = "Account not found. Try signing up!";
+        if (err.code === "auth/weak-password") msg = "Password is too weak (min 6 characters).";
+        setAuthError(msg || err.message);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    const handleForgotPassword = async () => {
+      if (!email) return alert("Please enter your email address first.");
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent! Check your inbox.");
+      } catch (err) {
+        alert(err.message);
+      }
+    };
+
+    const handleGoogleLogin = async () => {
+      setAuthLoading(true);
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        await handleAuthSuccess(result.user);
+      } catch (err) {
+        console.error(err);
+        alert(`Google Login failed: ${err.code}`);
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    const handleAuthSuccess = async (user) => {
+      if (targetPlan) {
+        await syncProStatus(user.uid, targetPlan);
+        localStorage.setItem("bk_plan", targetPlan);
+        setPlan(targetPlan);
+      }
+      setShowLogin(false);
+      setTargetPlan(null);
+    };
+
+    return (
+      <div style={S.modal}>
+        <div style={S.modalContent}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+            <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "#d4af37" }}>
+              {targetPlan ? "Secure Your Pro Account" : (isSignup ? "Create Account" : "Login to BillKaro")}
+            </div>
+            <button style={{ background: "none", border: "none", color: "#8899aa", cursor: "pointer", fontSize: 20 }} onClick={() => setShowLogin(false)}>✕</button>
+          </div>
+
+          <button 
+            type="button"
+            style={{ ...S.btnSecondary, width: "100%", background: "white", color: "#0f1923", border: "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, fontWeight: 700, height: 48, borderRadius: 10 }}
+            onClick={handleGoogleLogin}
+            disabled={authLoading}
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="G" />
+            Continue with Google
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0" }}>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.1)", flex: 1 }}></div>
+            <div style={{ color: "#445566", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em" }}>OR EMAIL</div>
+            <div style={{ height: 1, background: "rgba(255,255,255,0.1)", flex: 1 }}></div>
+          </div>
+
+          <form onSubmit={onEmailSubmit}>
+            {authError && <div style={{ color: "#ef4444", fontSize: 13, textAlign: "center", marginBottom: 16 }}>⚠️ {authError}</div>}
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={S.label}>Email Address</label>
+              <input style={S.input} type="email" autoFocus placeholder="name@company.com" value={email} onChange={e => { setEmail(e.target.value); setAuthError(""); }} />
+            </div>
+            
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <label style={S.label}>Password</label>
+                {!isSignup && (
+                  <button type="button" onClick={handleForgotPassword} style={{ background: "none", border: "none", color: "#8899aa", fontSize: 11, cursor: "pointer", textDecoration: "underline" }}>
+                    Forgot Password?
+                  </button>
+                )}
+              </div>
+              <input style={S.input} type="password" placeholder="••••••••" value={password} onChange={e => { setPassword(e.target.value); setAuthError(""); }} />
+            </div>
+
+            <button style={{ ...S.btnPrimary, width: "100%", height: 48, borderRadius: 10, fontSize: 15, marginTop: 24 }} type="submit" disabled={authLoading}>
+              {authLoading ? "One moment..." : (isSignup ? "Create Free Account →" : "Sign In →")}
+            </button>
+
+            <div style={{ textAlign: "center", marginTop: 20 }}>
+              <button 
+                type="button"
+                style={{ background: "none", border: "none", color: "#8899aa", fontSize: 13, cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => setIsSignup(!isSignup)}
+              >
+                {isSignup ? "Already have an account? Log In" : "Don't have an account? Sign Up"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
 
   // ── UPGRADE PAGE ──────────────────────────────────────────────────────────────
   if (step === "upgrade") return (
     <div style={{ ...S.page, display: "flex", flexDirection: "column" }}>
       <div style={S.header}>
         <div style={S.logo}>⬡ BillKaro</div>
-        <button style={S.btnSecondary} onClick={() => setStep("preview")}>← Back</button>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ ...S.badge, borderColor: PLANS[plan].color + "88", color: PLANS[plan].color }}>
+            {PLANS[plan].label.toUpperCase()} PLAN
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ color: "#e8edf2", fontSize: 12, fontWeight: 600 }}>{user.email || user.phoneNumber}</div>
+                <div style={{ color: "#d4af37", fontSize: 10 }}>Pro Account</div>
+              </div>
+              <button style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#8899aa", padding: "6px 12px", borderRadius: 6, fontSize: 11, cursor: "pointer" }} onClick={handleLogout}>Logout</button>
+            </div>
+          ) : (
+            <button style={{ ...S.btnSecondary, padding: "6px 16px", fontSize: 12 }} onClick={() => setShowLogin(true)}>
+              Login
+            </button>
+          )}
+          <button style={S.btnSecondary} onClick={() => setStep("preview")}>← Back</button>
+        </div>
       </div>
+      {showLogin && <AuthModal />}
+
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, color: "#d4af37", marginBottom: 12 }}>
@@ -202,9 +444,9 @@ export default function App() {
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>
           {/* Free */}
-          <div style={{ ...S.card, borderColor: "rgba(136,153,170,0.3)", opacity: 0.6 }}>
+          <div style={{ ...S.card, borderColor: "rgba(136,153,170,0.3)", opacity: 0.6 }} className="hover-card">
             <div style={{ color: "#8899aa", fontWeight: 700, fontSize: 13, marginBottom: 8 }}>FREE</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#e8edf2", marginBottom: 4 }}>₹0</div>
             <div style={{ color: "#8899aa", fontSize: 12, marginBottom: 20 }}>3 invoices total</div>
@@ -215,7 +457,7 @@ export default function App() {
           </div>
 
           {/* Pro */}
-          <div style={{ ...S.card, borderColor: "rgba(212,175,55,0.5)", background: "rgba(212,175,55,0.06)", position: "relative" }}>
+          <div style={{ ...S.card, borderColor: "rgba(212,175,55,0.5)", background: "rgba(212,175,55,0.06)", position: "relative" }} className="hover-card">
             <div style={{ position: "absolute", top: -12, left: "50%", transform: "translateX(-50%)", background: "#d4af37", color: "#0f1923", fontSize: 10, fontWeight: 700, padding: "3px 12px", borderRadius: 20 }}>MOST POPULAR</div>
             <div style={{ color: "#d4af37", fontWeight: 700, fontSize: 13, marginBottom: 8 }}>PRO</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#e8edf2", marginBottom: 4 }}>₹149<span style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></div>
@@ -229,7 +471,7 @@ export default function App() {
           </div>
 
           {/* Business */}
-          <div style={{ ...S.card, borderColor: "rgba(20,184,166,0.4)", background: "rgba(20,184,166,0.04)" }}>
+          <div style={{ ...S.card, borderColor: "rgba(20,184,166,0.4)", background: "rgba(20,184,166,0.04)" }} className="hover-card">
             <div style={{ color: "#14b8a6", fontWeight: 700, fontSize: 13, marginBottom: 8 }}>BUSINESS</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#e8edf2", marginBottom: 4 }}>₹399<span style={{ fontSize: 13, fontWeight: 400 }}>/mo</span></div>
             <div style={{ color: "#8899aa", fontSize: 12, marginBottom: 20 }}>For agencies & CAs</div>
@@ -254,15 +496,13 @@ export default function App() {
     <div style={S.page}>
       <style>{`
         @media print { body { display: none; } }
-        input:focus, select:focus { border-color: rgba(212,175,55,0.6) !important; }
+        input:focus, select:focus { border-color: rgba(212,175,55,1) !important; background: rgba(255,255,255,0.08) !important; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
         input::placeholder { color: #445566; }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #0f1923; }
-        ::-webkit-scrollbar-thumb { background: #2a3f55; border-radius: 2px; }
+        textarea::placeholder { color: #445566; }
+        .custom-date::-webkit-calendar-picker-indicator { filter: invert(0.8) sepia(1) saturate(5) hue-rotate(5deg); cursor: pointer; }
       `}</style>
 
-      <div style={S.header}>
+      <div style={S.header} className="bk-header">
         <div style={S.logo}>⬡ BillKaro</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ ...S.badge, borderColor: PLANS[plan].color + "88", color: PLANS[plan].color }}>
@@ -270,30 +510,49 @@ export default function App() {
           </div>
           {!isPro && <div style={{ color: "#8899aa", fontSize: 12 }}>{freeLeft} free invoice{freeLeft !== 1 ? "s" : ""} left</div>}
         </div>
-        <div style={{ color: "#445566", fontSize: 12 }}>Invoice #{invoiceNum}</div>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ color: "#e8edf2", fontSize: 12, fontWeight: 600 }}>{user.email || user.phoneNumber}</div>
+                <div style={{ color: "#d4af37", fontSize: 10 }}>Pro Account</div>
+              </div>
+              <button style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#8899aa", padding: "6px 12px", borderRadius: 6, fontSize: 11, cursor: "pointer" }} onClick={handleLogout}>Logout</button>
+            </div>
+          ) : (
+            <button style={{ ...S.btnSecondary, padding: "6px 16px", fontSize: 12 }} onClick={() => setShowLogin(true)}>
+              Login
+            </button>
+          )}
+          <div style={{ color: "#445566", fontSize: 12 }}>#{invoiceNum}</div>
+        </div>
       </div>
 
-      <div style={S.container}>
+      {showLogin && <AuthModal />}
+
+
+      <div style={S.container} className="bk-container bk-form-bottom-pad">
 
         {/* Invoice Details */}
-        <div style={S.card}>
-          <div style={S.secTitle}>Invoice Details</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+        <div style={S.card} className="hover-card">
+          <div style={S.secTitle}><span>📋</span> Invoice Details</div>
+          <div className="grid-responsive-3" style={{ gap: 20 }}>
             <div>
               <label style={S.label}>Invoice Number</label>
-              <input style={{ ...S.input, color: "#d4af37" }} value={invoiceNum} readOnly />
+              <input style={{ ...S.input, color: "#d4af37", fontWeight: 700 }} value={invoiceNum} readOnly />
             </div>
             <div>
               <label style={S.label}>Invoice Date</label>
-              <input type="date" style={S.input} value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
+              <input type="date" style={S.input} className="custom-date" value={invoiceDate} onChange={e => setInvoiceDate(e.target.value)} />
             </div>
             <div>
               <label style={S.label}>Due Date (Optional)</label>
-              <input type="date" style={S.input} value={dueDate} onChange={e => setDueDate(e.target.value)} />
+              <input type="date" style={S.input} className="custom-date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+          <div className="grid-responsive-2" style={{ gap: 20, marginTop: 24 }}>
             {/* Supply Type */}
             <div>
               <label style={S.label}>Supply Type</label>
@@ -323,7 +582,7 @@ export default function App() {
         </div>
 
         {/* Seller & Buyer */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+        <div className="grid-responsive-2" style={{ marginBottom: 24 }}>
 
           {/* Seller */}
           <div style={S.card}>
@@ -404,29 +663,31 @@ export default function App() {
         </div>
 
         {/* Items */}
-        <div style={S.card}>
-          <div style={S.secTitle}>Items / Services</div>
-          {errors.items && <div style={{ ...S.errText, marginBottom: 12 }}>Fill all item descriptions and rates</div>}
-          <div style={{ display: "grid", gridTemplateColumns: "3fr 80px 120px 100px 110px 40px", gap: 10, marginBottom: 8 }}>
+        <div style={S.card} className="hover-card">
+          <div style={S.secTitle}><span>📦</span> Items / Services</div>
+          {errors.items && <div style={{ ...S.errText, marginBottom: 16, background: "rgba(239,68,68,0.1)", padding: "8px 12px", borderRadius: 8 }}>⚠️ Fill all item descriptions and rates</div>}
+          <div className="scroll-container">
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(200px, 3fr) 80px 120px 100px 110px 40px", gap: 12, marginBottom: 12, minWidth: 700 }}>
             {["Description", "Qty", "Rate (₹)", "GST %", "Amount", ""].map(h => (
-              <div key={h} style={{ ...S.label, marginBottom: 0 }}>{h}</div>
+              <div key={h} style={{ ...S.label, marginBottom: 0, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{h}</div>
             ))}
           </div>
           {items.map((item, idx) => {
             const c = calcItem(item);
             return (
-              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "3fr 80px 120px 100px 110px 40px", gap: 10, marginBottom: 10, alignItems: "center" }}>
+              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "minmax(200px, 3fr) 80px 120px 100px 110px 40px", gap: 12, marginBottom: 12, alignItems: "center", minWidth: 700 }}>
                 <input style={S.input} placeholder={`Item ${idx + 1}`} value={item.desc} onChange={e => updateItem(item.id, "desc", e.target.value)} />
                 <input type="number" style={S.input} min="1" value={item.qty} onChange={e => updateItem(item.id, "qty", e.target.value)} />
                 <input type="number" style={S.input} placeholder="0.00" value={item.rate} onChange={e => updateItem(item.id, "rate", e.target.value)} />
                 <select style={S.select} value={item.gstRate} onChange={e => updateItem(item.id, "gstRate", Number(e.target.value))}>
                   {GST_RATES.map(r => <option key={r} value={r}>{r}%</option>)}
                 </select>
-                <div style={{ color: "#d4af37", fontSize: 14, fontWeight: 600, textAlign: "right" }}>{fmt(c.total)}</div>
-                <button style={S.btnDanger} onClick={() => removeItem(item.id)}>✕</button>
+                <div style={{ color: "#d4af37", fontSize: 13, fontWeight: 700, textAlign: "right", letterSpacing: "0.05em" }}>{fmt(c.total)}</div>
+                <button style={{ ...S.btnDanger, height: 40, width: 40, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px" }} onClick={() => removeItem(item.id)}>✕</button>
               </div>
             );
           })}
+          </div>
           <button style={S.btnAdd} onClick={addItem}>+ Add Item</button>
 
           <div style={{ marginTop: 24, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 20, display: "flex", justifyContent: "flex-end" }}>
@@ -446,14 +707,21 @@ export default function App() {
         </div>
 
         {/* Notes */}
-        <div style={S.card}>
-          <div style={S.secTitle}>Notes</div>
+        <div style={S.card} className="hover-card bk-card">
+          <div style={S.secTitle}><span>📝</span> Notes</div>
           <textarea style={{ ...S.input, minHeight: 80, resize: "vertical" }} value={notes} onChange={e => setNotes(e.target.value)} />
         </div>
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <button style={S.btnPrimary} onClick={handlePreview}>Preview & Download →</button>
+        {/* Desktop action row — hidden on mobile via CSS (replaced by sticky bar) */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }} className="no-print">
+          <button style={S.btnPrimary} onClick={handlePreview}>Preview &amp; Download →</button>
         </div>
+      </div>
+
+      {/* Sticky bottom action bar — shows only on mobile via CSS */}
+      <div className="mobile-action-bar">
+        <button style={{ ...S.btnSecondary, flex: 1 }} onClick={() => setShowLogin(true)}>🔑 Login</button>
+        <button style={{ ...S.btnPrimary, flex: 2 }} onClick={handlePreview}>Preview &amp; Download →</button>
       </div>
     </div>
   );
@@ -463,14 +731,25 @@ export default function App() {
     <div>
       <style>{`
         @media screen {
-          .print-actions { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #0f1923; border-bottom: 1px solid rgba(212,175,55,0.3); padding: 12px 40px; display: flex; align-items: center; gap: 12px; }
-          .invoice-wrap  { max-width: 860px; margin: 80px auto 60px; padding: 0 20px; }
+          .print-actions {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(15,25,35,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212,175,55,0.3);
+            padding: 12px 32px; display: flex; align-items: center; gap: 10px;
+            flex-wrap: wrap;
+          }
+          .invoice-wrap { max-width: 860px; margin: 80px auto 60px; padding: 0 20px; }
+        }
+        @media (max-width: 600px) {
+          .print-actions { padding: 10px 12px; gap: 6px; }
+          .print-actions button { font-size: 11px !important; padding: 7px 10px !important; }
+          .invoice-wrap { margin: 76px 8px 20px !important; }
         }
         @media print {
           .print-actions { display: none !important; }
           .invoice-wrap  { margin: 0; padding: 0; }
           body { background: white !important; }
-          .watermark { display: ${isPro ? "none" : "block"} !important; }
+          .watermark { display: block !important; }
         }
         * { box-sizing: border-box; }
         .watermark { display: none; }
@@ -480,6 +759,18 @@ export default function App() {
       <div className="print-actions">
         <div style={{ fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: 18, marginRight: "auto" }}>⬡ BillKaro</div>
         <div style={{ ...S.badge, borderColor: PLANS[plan].color + "88", color: PLANS[plan].color, fontSize: 10 }}>{PLANS[plan].label}</div>
+        
+        {user ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 10 }}>
+            <div style={{ textAlign: "right", lineHeight: 1 }}>
+              <div style={{ color: "#e8edf2", fontSize: 11, fontWeight: 600 }}>{user.email || user.phoneNumber}</div>
+              <div style={{ color: "#d4af37", fontSize: 9 }}>Logged In</div>
+            </div>
+          </div>
+        ) : (
+          <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px", marginRight: 10 }} onClick={() => setShowLogin(true)}>Login</button>
+        )}
+
         <button style={{ ...S.btnSecondary, fontSize: 13, padding: "8px 20px" }} onClick={() => setStep("form")}>← Edit</button>
         <button style={{ ...S.btnTeal, padding: "10px 20px", fontSize: 13 }} onClick={handleWhatsApp}>
           📲 WhatsApp
@@ -495,12 +786,23 @@ export default function App() {
         )}
       </div>
 
+      {showLogin && <AuthModal />}
+
+
       {/* Invoice */}
-      <div className="invoice-wrap" ref={previewRef}>
+      <div 
+        className="invoice-wrap no-copy" 
+        ref={previewRef} 
+        onContextMenu={(e) => e.preventDefault()}
+        onCopy={(e) => { e.preventDefault(); alert("⚠️ Professional Copy Protection Active: Text selection and copying are disabled to protect invoice integrity."); }}
+        onCut={(e) => e.preventDefault()}
+        onPaste={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
+      >
         <div style={{ background: "white", borderRadius: 4, boxShadow: "0 20px 80px rgba(0,0,0,0.4)", fontFamily: "'DM Sans', sans-serif", overflow: "hidden", position: "relative" }}>
 
-          {/* Watermark for free users */}
-          {!isPro && (
+          {/* Watermark for free/exhausted users */}
+          {showWatermark && (
             <div className="watermark" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%) rotate(-30deg)", fontSize: 64, fontWeight: 900, color: "rgba(212,175,55,0.08)", pointerEvents: "none", whiteSpace: "nowrap", zIndex: 0, fontFamily: "'Playfair Display', serif" }}>
               BILLKARO FREE
             </div>

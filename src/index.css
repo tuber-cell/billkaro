@@ -1,0 +1,182 @@
+/* ============================================================
+   BillKaro — Global Stylesheet
+   Premium, Mobile-First, Professional
+   ============================================================ */
+
+/* Universal Box-Sizing + Micro-transitions */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #0f1923;
+  /* Global Copy Protection */
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* ── Allow selection in form inputs (essential for UX) */
+input, textarea, select {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* ── Scrollbar Styling */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0f1923; }
+::-webkit-scrollbar-thumb { background: #2a3f55; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+/* ── Responsive Grid Utilities */
+.grid-responsive-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.grid-responsive-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+/* ── Copy Protection */
+.no-copy {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  pointer-events: auto; /* keep clicks but block selection */
+}
+
+/* ── Hover Card */
+.hover-card {
+  cursor: default;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  border-color: rgba(212, 175, 55, 0.25) !important;
+}
+
+/* ── Scroll Container (Items table) */
+.scroll-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.scroll-container::-webkit-scrollbar { height: 4px; }
+.scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(212,175,55,0.3);
+  border-radius: 10px;
+}
+
+/* ── Mobile: Sticky bottom action bar */
+.mobile-action-bar {
+  display: none;
+}
+
+/* ============================================================
+   MEDIA QUERIES
+   ============================================================ */
+@media (max-width: 768px) {
+  .grid-responsive-3 {
+    grid-template-columns: 1fr !important;
+  }
+  .grid-responsive-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Header: wrap on small screens */
+  .bk-header {
+    flex-wrap: wrap !important;
+    padding: 12px 16px !important;
+    gap: 10px !important;
+  }
+  .bk-header-logo {
+    font-size: 20px !important;
+  }
+
+  /* Form container */
+  .bk-container {
+    padding: 20px 12px !important;
+  }
+
+  /* Cards */
+  .bk-card {
+    padding: 20px 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Print-actions toolbar wrapping on mobile */
+  .print-actions {
+    flex-wrap: wrap !important;
+    padding: 10px 16px !important;
+    gap: 8px !important;
+  }
+  .print-actions button {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+  }
+
+  /* Sticky bottom bar on mobile */
+  .mobile-action-bar {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(15, 25, 35, 0.96);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(212,175,55,0.3);
+    padding: 12px 16px;
+    gap: 10px;
+    z-index: 200;
+  }
+  .mobile-action-bar button {
+    flex: 1;
+    font-size: 13px !important;
+    padding: 12px 10px !important;
+  }
+
+  /* Give content enough bottom space so the bar doesn't cover it */
+  .bk-form-bottom-pad {
+    padding-bottom: 90px;
+  }
+
+  /* Invoice preview on mobile */
+  .invoice-wrap {
+    margin: 70px 8px 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-responsive-3 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Print */
+@media print {
+  .no-print, .print-actions, .mobile-action-bar {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    user-select: none;
+  }
+  .invoice-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
