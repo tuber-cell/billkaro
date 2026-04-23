@@ -48,7 +48,7 @@ const PLANS = {
 export default function App() {
   // ── Core state ───────────────────────────────────────────────────────────────
   const [step, setStep] = useState("form");
-  const [invoiceNum] = useState(invoiceNo());
+  const [invoiceNum, setInvoiceNum] = useState(invoiceNo());
   const [invoiceDate, setInvoiceDate] = useState(today());
   const [dueDate, setDueDate] = useState("");
   const [supplyType, setSupplyType] = useState("intra");
@@ -215,6 +215,20 @@ export default function App() {
       saveToLocalArchive(snapshot);
     }
     setStep("preview");
+  };
+
+  // ── New Invoice — fresh ID + full form reset ───────────────────────────────
+  const handleNewInvoice = () => {
+    setInvoiceNum(invoiceNo());           // brand-new unique invoice number
+    setInvoiceDate(today());
+    setDueDate("");
+    setSupplyType("intra");
+    setNotes("Thank you for your business!");
+    setPaidStatus("unpaid");
+    setBuyer({ name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", email: "", phone: "" });
+    setItems([emptyItem()]);
+    setErrors({});
+    setStep("form");
   };
 
   // ── WhatsApp share ────────────────────────────────────────────────────────────
@@ -830,6 +844,11 @@ export default function App() {
         )}
 
         <button style={{ ...S.btnSecondary, fontSize: 13, padding: "8px 20px" }} onClick={() => setStep("form")}>← Edit</button>
+        <button
+          style={{ ...S.btnSecondary, fontSize: 13, padding: "8px 20px", background: "rgba(52,211,153,0.12)", color: "#34d399", borderColor: "rgba(52,211,153,0.4)" }}
+          onClick={handleNewInvoice}
+          title="Save current invoice and start a fresh one with a new invoice number"
+        >✚ New Invoice</button>
         <button style={{ ...S.btnTeal, padding: "10px 20px", fontSize: 13 }} onClick={handleWhatsApp}>
           📲 WhatsApp
         </button>
