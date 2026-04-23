@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useExcelExport } from "./hooks/useExcelExport";
 import { auth, db, googleProvider } from "./lib/firebase";
 import { 
   onAuthStateChanged, 
@@ -55,6 +56,7 @@ export default function App() {
   const [errors, setErrors] = useState({});
   const [paidStatus, setPaidStatus] = useState("unpaid"); // unpaid | paid
   const previewRef = useRef();
+  const { exportToExcel, exporting } = useExcelExport();
 
   // ── Saved profiles ───────────────────────────────────────────────────────────
   const [savedSeller, setSavedSeller] = useState(() => loadJSON("bk_seller", null));
@@ -713,7 +715,24 @@ export default function App() {
         </div>
 
         {/* Desktop action row — hidden on mobile via CSS (replaced by sticky bar) */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }} className="no-print">
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap" }} className="no-print">
+          <button
+            style={{
+              ...S.btnSecondary,
+              background: exporting ? "#334155" : "rgba(212,175,55,0.12)",
+              color: exporting ? "#8899aa" : "#d4af37",
+              cursor: exporting ? "not-allowed" : "pointer",
+            }}
+            onClick={() => exportToExcel([{
+              invoiceDate: invoiceDate, invoiceNum: invoiceNum,
+              buyer: { name: buyerName, gstin: buyerGST },
+              seller: { gstin: sellerGST },
+              supplyType: supplyType, paidStatus: paidStatus, items,
+            }])}
+            disabled={exporting}
+          >
+            {exporting ? "⏳ Exporting…" : "⬇ Export to Excel"}
+          </button>
           <button style={S.btnPrimary} onClick={handlePreview}>Preview &amp; Download →</button>
         </div>
       </div>
@@ -721,7 +740,26 @@ export default function App() {
       {/* Sticky bottom action bar — shows only on mobile via CSS */}
       <div className="mobile-action-bar">
         <button style={{ ...S.btnSecondary, flex: 1 }} onClick={() => setShowLogin(true)}>🔑 Login</button>
-        <button style={{ ...S.btnPrimary, flex: 2 }} onClick={handlePreview}>Preview &amp; Download →</button>
+        <button
+          style={{
+            flex: 1,
+            background: exporting ? "#334155" : "rgba(212,175,55,0.15)",
+            color: exporting ? "#8899aa" : "#d4af37",
+            border: "1px solid rgba(212,175,55,0.4)",
+            padding: "10px 8px", borderRadius: 8, fontWeight: 700, fontSize: 12,
+            cursor: exporting ? "not-allowed" : "pointer",
+          }}
+          onClick={() => exportToExcel([{
+            invoiceDate: invoiceDate, invoiceNum: invoiceNum,
+            buyer: { name: buyerName, gstin: buyerGST },
+            seller: { gstin: sellerGST },
+            supplyType: supplyType, paidStatus: paidStatus, items,
+          }])}
+          disabled={exporting}
+        >
+          {exporting ? "⏳" : "⬇ Excel"}
+        </button>
+        <button style={{ ...S.btnPrimary, flex: 2 }} onClick={handlePreview}>Preview →</button>
       </div>
     </div>
   );
