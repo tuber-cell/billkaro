@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useExcelExport } from "./hooks/useExcelExport";
+import { useArchiveExport, saveToLocalArchive } from "./hooks/useArchiveExport";
 import { auth, db, googleProvider } from "./lib/firebase";
 import { 
   onAuthStateChanged, 
@@ -56,7 +56,7 @@ export default function App() {
   const [errors, setErrors] = useState({});
   const [paidStatus, setPaidStatus] = useState("unpaid"); // unpaid | paid
   const previewRef = useRef();
-  const { exportToExcel, exporting } = useExcelExport();
+  const { generateArchive, exporting } = useArchiveExport();
 
   // ── Saved profiles ───────────────────────────────────────────────────────────
   const [savedSeller, setSavedSeller] = useState(() => loadJSON("bk_seller", null));
@@ -195,7 +195,27 @@ export default function App() {
     setErrors(e);
     return Object.keys(e).length === 0;
   };
-  const handlePreview = () => { if (validate()) setStep("preview"); };
+  const handlePreview = () => {
+    if (!validate()) return;
+    // ── Save snapshot to Master Archive ────────────────────────────────────
+    const snapshot = {
+      invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes,
+      seller: { ...seller },
+      buyer:  { ...buyer },
+      items:  items.map(i => ({ ...i })),
+      createdAt: new Date().toISOString(),
+    };
+    if (auth.currentUser) {
+      // Firestore save (fire-and-forget — doesn't block UI)
+      setDoc(
+        doc(db, "users", auth.currentUser.uid, "invoices", invoiceNum),
+        snapshot
+      ).catch(console.error);
+    } else {
+      saveToLocalArchive(snapshot);
+    }
+    setStep("preview");
+  };
 
   // ── WhatsApp share ────────────────────────────────────────────────────────────
   const handleWhatsApp = () => {
@@ -723,15 +743,10 @@ export default function App() {
               color: exporting ? "#8899aa" : "#d4af37",
               cursor: exporting ? "not-allowed" : "pointer",
             }}
-            onClick={() => exportToExcel([{
-              invoiceDate: invoiceDate, invoiceNum: invoiceNum,
-              buyer: { name: buyerName, gstin: buyerGST },
-              seller: { gstin: sellerGST },
-              supplyType: supplyType, paidStatus: paidStatus, items,
-            }])}
+            onClick={generateArchive}
             disabled={exporting}
           >
-            {exporting ? "⏳ Exporting…" : "⬇ Export to Excel"}
+            {exporting ? "⏳ Building Archive…" : "📦 Generate Full Archive"}
           </button>
           <button style={S.btnPrimary} onClick={handlePreview}>Preview &amp; Download →</button>
         </div>
@@ -749,15 +764,10 @@ export default function App() {
             padding: "10px 8px", borderRadius: 8, fontWeight: 700, fontSize: 12,
             cursor: exporting ? "not-allowed" : "pointer",
           }}
-          onClick={() => exportToExcel([{
-            invoiceDate: invoiceDate, invoiceNum: invoiceNum,
-            buyer: { name: buyerName, gstin: buyerGST },
-            seller: { gstin: sellerGST },
-            supplyType: supplyType, paidStatus: paidStatus, items,
-          }])}
+          onClick={generateArchive}
           disabled={exporting}
         >
-          {exporting ? "⏳" : "⬇ Excel"}
+          {exporting ? "⏳" : "📦 Archive"}
         </button>
         <button style={{ ...S.btnPrimary, flex: 2 }} onClick={handlePreview}>Preview →</button>
       </div>
