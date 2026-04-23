@@ -2,11 +2,14 @@
  * useArchiveExport — Master Archive Export Hook
  *
  * Source of truth strategy:
- *  - Logged-in users  → Firestore collection: users/{uid}/invoices
- *  - Guest users      → localStorage key: bk_invoice_archive (array)
+ *  - Logged-in users  → Firestore: users/{uid}/invoices  (full history)
+ *  - Guest users      → localStorage: bk_invoice_archive (full history)
+ *
+ * The hook ALWAYS merges the current live invoice from the form into the
+ * archive before exporting, so it works correctly even on the very first use.
  *
  * ALL derived fields (taxable, CGST, SGST, IGST, total) are
- * calculated here in the service layer — never trusted from UI state.
+ * calculated in the service layer — never trusted from UI state.
  */
 import { useState, useCallback } from "react";
 import * as XLSX from "xlsx";
@@ -26,14 +29,20 @@ export function getLocalArchive() {
 
 export function saveToLocalArchive(invoice) {
   const archive = getLocalArchive();
-  // Deduplicate by invoiceNum — overwrite if same number exists
   const idx = archive.findIndex((i) => i.invoiceNum === invoice.invoiceNum);
   if (idx >= 0) archive[idx] = invoice;
-  else archive.unshift(invoice); // newest first
+  else archive.unshift(invoice);
   localStorage.setItem(LS_KEY, JSON.stringify(archive));
 }
 
-// ── Row calculation (single source of truth) ──────────────────────────────────
+// ── Merge helper: deduplicate by invoiceNum, current invoice wins ─────────────
+function mergeInvoices(archive, current) {
+  if (!current) return archive;
+  const merged = archive.filter((i) => i.invoiceNum !== current.invoiceNum);
+  return [current, ...merged]; // current always first
+}
+
+// ── Row calculation (single source of truth — service layer) ──────────────────
 function calcRow(inv) {
   const taxable = (inv.items || []).reduce((sum, item) => {
     return sum + (parseFloat(item.qty) || 0) * (parseFloat(item.rate) || 0);
@@ -46,9 +55,9 @@ function calcRow(inv) {
   }, 0);
 
   const isIntra = inv.supplyType === "intra";
-  const cgst = isIntra ? gstTotal / 2 : 0;
-  const sgst = isIntra ? gstTotal / 2 : 0;
-  const igst = !isIntra ? gstTotal : 0;
+  const cgst  = isIntra ? gstTotal / 2 : 0;
+  const sgst  = isIntra ? gstTotal / 2 : 0;
+  const igst  = !isIntra ? gstTotal : 0;
   const total = taxable + gstTotal;
 
   return {
@@ -72,37 +81,45 @@ function calcRow(inv) {
 export function useArchiveExport() {
   const [exporting, setExporting] = useState(false);
 
-  const generateArchive = useCallback(async () => {
+  /**
+   * generateArchive(currentInvoice)
+   * @param {object} currentInvoice — the live invoice currently in the form
+   *   { invoiceNum, invoiceDate, buyer, seller, supplyType, paidStatus, items }
+   *   Pass null to export only the stored archive.
+   */
+  const generateArchive = useCallback(async (currentInvoice = null) => {
     setExporting(true);
     try {
-      let invoices = [];
-
+      let archive = [];
       const user = auth.currentUser;
 
       if (user) {
-        // ── Logged-in: pull full history from Firestore ─────────────────────
-        const ref = collection(db, "users", user.uid, "invoices");
-        const q = query(ref, orderBy("createdAt", "desc"));
-        const snap = await getDocs(q);
-
-        if (snap.empty) {
-          alert("No invoices found in your archive. Generate at least one invoice first.");
-          setExporting(false);
-          return;
+        // ── Logged-in: pull full history from Firestore ───────────────────
+        try {
+          const ref = collection(db, "users", user.uid, "invoices");
+          const q   = query(ref, orderBy("createdAt", "desc"));
+          const snap = await getDocs(q);
+          archive = snap.docs.map((d) => d.data());
+        } catch (fsErr) {
+          console.warn("Firestore fetch failed, using localStorage:", fsErr);
+          archive = getLocalArchive();
         }
-        invoices = snap.docs.map((d) => d.data());
       } else {
-        // ── Guest: pull from localStorage archive ───────────────────────────
-        invoices = getLocalArchive();
-        if (invoices.length === 0) {
-          alert("No invoices found. Generate at least one invoice first.");
-          setExporting(false);
-          return;
-        }
+        // ── Guest: pull from localStorage archive ────────────────────────
+        archive = getLocalArchive();
+      }
+
+      // ── Merge the current live invoice into archive ───────────────────────
+      const allInvoices = mergeInvoices(archive, currentInvoice);
+
+      if (allInvoices.length === 0) {
+        alert("No invoices to export. Fill in the form and try again.");
+        setExporting(false);
+        return;
       }
 
       // ── Calculate all derived fields in the service layer ─────────────────
-      const rows = invoices.map(calcRow);
+      const rows = allInvoices.map(calcRow);
 
       // ── Build worksheet ───────────────────────────────────────────────────
       const worksheet = XLSX.utils.json_to_sheet(rows);
@@ -138,7 +155,8 @@ export function useArchiveExport() {
 
       XLSX.utils.book_append_sheet(workbook, worksheet, "Master Archive");
 
-      const fileName = `BillKaro_Archive_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const count    = allInvoices.length;
+      const fileName = `BillKaro_Archive_${new Date().toISOString().slice(0, 10)}_${count}inv.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
     } catch (err) {

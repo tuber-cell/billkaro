@@ -743,7 +743,12 @@ export default function App() {
               color: exporting ? "#8899aa" : "#d4af37",
               cursor: exporting ? "not-allowed" : "pointer",
             }}
-            onClick={generateArchive}
+            onClick={() => generateArchive({
+              invoiceNum, invoiceDate, dueDate, supplyType, paidStatus,
+              buyer: { ...buyer }, seller: { ...seller },
+              items: items.map(i => ({ ...i })),
+              createdAt: new Date().toISOString(),
+            })}
             disabled={exporting}
           >
             {exporting ? "⏳ Building Archive…" : "📦 Generate Full Archive"}
@@ -764,7 +769,12 @@ export default function App() {
             padding: "10px 8px", borderRadius: 8, fontWeight: 700, fontSize: 12,
             cursor: exporting ? "not-allowed" : "pointer",
           }}
-          onClick={generateArchive}
+          onClick={() => generateArchive({
+            invoiceNum, invoiceDate, dueDate, supplyType, paidStatus,
+            buyer: { ...buyer }, seller: { ...seller },
+            items: items.map(i => ({ ...i })),
+            createdAt: new Date().toISOString(),
+          })}
           disabled={exporting}
         >
           {exporting ? "⏳" : "📦 Archive"}
