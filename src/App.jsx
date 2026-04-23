@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Analytics } from '@vercel/analytics/react';
 import { useArchiveExport, saveToLocalArchive, getLocalArchive } from "./hooks/useArchiveExport";
 import { auth, db, googleProvider } from "./lib/firebase";
 import { 
@@ -142,7 +143,7 @@ export default function App() {
   };
 
 
-  // ── Calculations ──────────────────────────────────────────────────────────────
+  // ── Calculations ───────────────────────────────────────────────────────────��──
   const calcItem = (item) => {
     const taxable = (parseFloat(item.qty) || 0) * (parseFloat(item.rate) || 0);
     const gstAmt = taxable * (item.gstRate / 100);
@@ -321,7 +322,7 @@ export default function App() {
     setStep("upgrade");
   };
 
-  // ── Styles ────────────────────────────────────────────────────────────────────
+  // ── Styles ──────────────────────���─────────────────────────────────────────────
   const S = {
     page: { minHeight: "100vh", background: "linear-gradient(135deg, #0f1923 0%, #162032 50%, #0f1923 100%)", fontFamily: "'DM Sans', sans-serif", padding: "0 0 60px" },
     header: { background: "rgba(15, 25, 35, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(212,175,55,0.3)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 },
@@ -564,7 +565,7 @@ export default function App() {
     </div>
   );
 
-  // ── FORM ──────────────────────────────────────────────────────────────────────
+  // ── FORM ─────────────────────────────────────────────────────���────────────────
   if (step === "form") return (
     <div style={S.page}>
       <style>{`
@@ -1031,6 +1032,7 @@ export default function App() {
           </div>
         </div>
       </div>
+      <Analytics />
     </div>
   );
 }
