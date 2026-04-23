@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useArchiveExport, saveToLocalArchive } from "./hooks/useArchiveExport";
+import { useArchiveExport, saveToLocalArchive, getLocalArchive } from "./hooks/useArchiveExport";
 import { auth, db, googleProvider } from "./lib/firebase";
 import { 
   onAuthStateChanged, 
@@ -57,6 +57,8 @@ export default function App() {
   const [paidStatus, setPaidStatus] = useState("unpaid"); // unpaid | paid
   const previewRef = useRef();
   const { generateArchive, exporting } = useArchiveExport();
+  const [archiveCount, setArchiveCount] = useState(() => getLocalArchive().length);
+  const [saveToast, setSaveToast] = useState(false);
 
   // ── Saved profiles ───────────────────────────────────────────────────────────
   const [savedSeller, setSavedSeller] = useState(() => loadJSON("bk_seller", null));
@@ -229,6 +231,41 @@ export default function App() {
     setItems([emptyItem()]);
     setErrors({});
     setStep("form");
+  };
+
+  // ── Save & Next — save to archive, reset form, no preview needed ────────────
+  const handleSaveAndNext = () => {
+    if (!validate()) return;
+    const snapshot = {
+      invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes,
+      seller: { ...seller },
+      buyer:  { ...buyer },
+      items:  items.map(i => ({ ...i })),
+      createdAt: new Date().toISOString(),
+    };
+    if (auth.currentUser) {
+      setDoc(
+        doc(db, "users", auth.currentUser.uid, "invoices", invoiceNum),
+        snapshot
+      ).catch(console.error);
+    } else {
+      saveToLocalArchive(snapshot);
+    }
+    const newCount = getLocalArchive().length;
+    setArchiveCount(newCount);
+    // Reset form with fresh invoice number
+    setInvoiceNum(invoiceNo());
+    setInvoiceDate(today());
+    setDueDate("");
+    setSupplyType("intra");
+    setNotes("Thank you for your business!");
+    setPaidStatus("unpaid");
+    setBuyer({ name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", email: "", phone: "" });
+    setItems([emptyItem()]);
+    setErrors({});
+    // Show confirmation toast briefly
+    setSaveToast(true);
+    setTimeout(() => setSaveToast(false), 3000);
   };
 
   // ── WhatsApp share ────────────────────────────────────────────────────────────
@@ -748,8 +785,21 @@ export default function App() {
           <textarea style={{ ...S.input, minHeight: 80, resize: "vertical" }} value={notes} onChange={e => setNotes(e.target.value)} />
         </div>
 
-        {/* Desktop action row — hidden on mobile via CSS (replaced by sticky bar) */}
-        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap" }} className="no-print">
+        {/* Desktop action row */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", flexWrap: "wrap", alignItems: "center" }} className="no-print">
+          {/* Archive counter badge */}
+          {archiveCount > 0 && (
+            <span style={{ color: "#34d399", fontSize: 12, fontWeight: 600, background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 20, padding: "4px 12px" }}>
+              📂 {archiveCount} saved
+            </span>
+          )}
+          {/* Save & Next — the quick batch-entry button */}
+          <button
+            style={{ ...S.btnSecondary, background: "rgba(52,211,153,0.12)", color: "#34d399", borderColor: "rgba(52,211,153,0.4)", fontWeight: 700 }}
+            onClick={handleSaveAndNext}
+          >
+            💾 Save &amp; Next Invoice
+          </button>
           <button
             style={{
               ...S.btnSecondary,
@@ -765,34 +815,22 @@ export default function App() {
             })}
             disabled={exporting}
           >
-            {exporting ? "⏳ Building Archive…" : "📦 Generate Full Archive"}
+            {exporting ? "⏳ Building…" : "📦 Export All to Excel"}
           </button>
           <button style={S.btnPrimary} onClick={handlePreview}>Preview &amp; Download →</button>
         </div>
       </div>
 
-      {/* Sticky bottom action bar — shows only on mobile via CSS */}
+      {/* Save confirmation toast */}
+      {saveToast && (
+        <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "rgba(52,211,153,0.95)", color: "#0f1923", padding: "12px 28px", borderRadius: 30, fontWeight: 700, fontSize: 14, zIndex: 9999, boxShadow: "0 8px 24px rgba(0,0,0,0.3)", whiteSpace: "nowrap" }}>
+          ✅ Invoice saved! Form ready for next invoice.
+        </div>
+      )}
+
+      {/* Sticky bottom action bar — mobile only */}
       <div className="mobile-action-bar">
-        <button style={{ ...S.btnSecondary, flex: 1 }} onClick={() => setShowLogin(true)}>🔑 Login</button>
-        <button
-          style={{
-            flex: 1,
-            background: exporting ? "#334155" : "rgba(212,175,55,0.15)",
-            color: exporting ? "#8899aa" : "#d4af37",
-            border: "1px solid rgba(212,175,55,0.4)",
-            padding: "10px 8px", borderRadius: 8, fontWeight: 700, fontSize: 12,
-            cursor: exporting ? "not-allowed" : "pointer",
-          }}
-          onClick={() => generateArchive({
-            invoiceNum, invoiceDate, dueDate, supplyType, paidStatus,
-            buyer: { ...buyer }, seller: { ...seller },
-            items: items.map(i => ({ ...i })),
-            createdAt: new Date().toISOString(),
-          })}
-          disabled={exporting}
-        >
-          {exporting ? "⏳" : "📦 Archive"}
-        </button>
+        <button style={{ ...S.btnSecondary, flex: 1, fontSize: 11 }} onClick={handleSaveAndNext}>💾 Save &amp; Next</button>
         <button style={{ ...S.btnPrimary, flex: 2 }} onClick={handlePreview}>Preview →</button>
       </div>
     </div>
