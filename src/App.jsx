@@ -1723,7 +1723,7 @@ export default function App() {
   // ── UPGRADE PAGE ──────────────────────────────────────────────────────────────
   if (step === "upgrade") return (
     <div style={{ ...S.page, display: "flex", flexDirection: "column" }}>
-      <div style={{ background: "red", color: "white", textAlign: "center", padding: "4px", fontSize: 10, fontWeight: 900 }}>CODE UPDATED v2 - PLEASE REFRESH</div>
+
       <div style={S.header}>
         <div style={S.logo}>⬡ BillKaro</div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1971,7 +1971,7 @@ export default function App() {
   // ── PREVIEW ───────────────────────────────────────────────────────────────────
   return (
     <div>
-      <div style={{ background: "red", color: "white", textAlign: "center", padding: "4px", fontSize: 10, fontWeight: 900, position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999 }}>CODE UPDATED v2 - PLEASE REFRESH</div>
+
       <style>{`
         @media screen {
           .print-actions {
