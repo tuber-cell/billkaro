@@ -199,6 +199,8 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
   };
 
   const onGoogleLogin = () => {
+    console.log("DEBUG: Google Login Button Clicked");
+    alert("Google Button Clicked! Starting login...");
     handleGoogleLogin(setAuthLoading, setAuthError);
   };
 
@@ -221,6 +223,16 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
 
         {authError && <div style={{ ...S.errText, background: "rgba(239,68,68,0.1)", padding: 10, borderRadius: 8, marginBottom: 16 }}>{authError}</div>}
 
+        <button onClick={onGoogleLogin} disabled={authLoading} style={{ background: "#fff", color: "#1a2d45", border: "none", width: "100%", height: 48, borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 20 }}>
+          <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20" alt="G" />
+          {authLoading ? "Connecting..." : "Continue with Google"}
+        </button>
+
+        <div style={{ textAlign: "center", margin: "16px 0", position: "relative" }}>
+          <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.05)" }}></div>
+          <span style={{ background: "#1a2d45", padding: "0 12px", color: "#445566", fontSize: 12, position: "relative" }}>OR</span>
+        </div>
+
         <form onSubmit={onEmailSubmit}>
           <div style={{ marginBottom: 16 }}>
             <label style={S.label}>Email Address</label>
@@ -237,15 +249,7 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
           </button>
         </form>
 
-        <div style={{ textAlign: "center", margin: "16px 0", position: "relative" }}>
-          <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: "rgba(255,255,255,0.05)" }}></div>
-          <span style={{ background: "#1a2d45", padding: "0 12px", color: "#445566", fontSize: 12, position: "relative" }}>OR</span>
-        </div>
 
-        <button onClick={onGoogleLogin} disabled={authLoading} style={{ background: "#fff", color: "#1a2d45", border: "none", width: "100%", height: 48, borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 20 }}>
-          <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20" alt="G" />
-          {authLoading ? "Connecting..." : "Continue with Google"}
-        </button>
 
         <div style={{ textAlign: "center", fontSize: 13, color: "#8899aa" }}>
           {isSignup ? "Already have an account?" : "New to BillKaro?"}
