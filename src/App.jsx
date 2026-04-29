@@ -268,7 +268,7 @@ const InvoiceFormView = ({
   warnings, hasHistory, savedClients, handleLoadClient, handleDeleteClient, clearBuyerHistory, 
   handleSaveClient, items, updateItem, removeItem, addItem, calcItem, totals, 
   archiveCount, handleSaveAndNext, handlePreview, generateArchive, exporting, 
-  saveToast, handleLogout, setShowLogin, showLogin, targetPlan, setTargetPlan, setPlan, syncProStatus, openRazorpay, setUser, fmt, STATES = [], GST_RATES = [], PLANS = {}, S, notes, setNotes
+  saveToast, handleLogout, setShowLogin, showLogin, targetPlan, setTargetPlan, setPlan, syncProStatus, openRazorpay, setUser, dbPro, fmt, STATES = [], GST_RATES = [], PLANS = {}, S, notes, setNotes
 }) => {
   return (
     <div style={S.page}>
@@ -709,7 +709,7 @@ const InvoiceFormView = ({
 
 
 
-const DashboardView = ({ user, expenses, seller, setStep, getLocalArchive, generateArchive, generateGSTR1, fmt, S }) => {
+const DashboardView = ({ user, dbPro, plan, expenses, seller, setStep, getLocalArchive, generateArchive, generateGSTR1, handleLogout, setShowLogin, fmt, S }) => {
   const [stats, setStats] = useState(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -1092,7 +1092,7 @@ const DashboardView = ({ user, expenses, seller, setStep, getLocalArchive, gener
   );
 };
 
-const ExpensesView = ({ expenses, setExpenses, expenseForm, setExpenseForm, today, S }) => {
+const ExpensesView = ({ user, dbPro, plan, expenses, setExpenses, expenseForm, setExpenseForm, today, handleLogout, setShowLogin, S }) => {
   const handleAddExpense = (e) => {
     e.preventDefault();
     if (!expenseForm.amount) return alert("Enter amount");
@@ -1880,12 +1880,16 @@ export default function App() {
         <div style={{ padding: "40px 0" }}>
           <DashboardView 
             user={user} 
+            dbPro={dbPro}
+            plan={plan}
             expenses={expenses} 
             seller={seller} 
             setStep={setStep} 
             getLocalArchive={getLocalArchive} 
             generateArchive={generateArchive} 
             generateGSTR1={generateGSTR1}
+            handleLogout={handleLogout}
+            setShowLogin={setShowLogin}
             fmt={fmt} 
             S={S}
           />
@@ -1940,7 +1944,7 @@ export default function App() {
   if (step === "form") return (
     <ErrorBoundary>
       <InvoiceFormView 
-        step={step} setStep={setStep} isPro={isPro} plan={plan} dailyLeft={dailyLeft} user={user}
+        step={step} setStep={setStep} isPro={isPro} plan={plan} dailyLeft={dailyLeft} user={user} dbPro={dbPro}
         invoiceNum={invoiceNum} invoiceDate={invoiceDate} setInvoiceDate={setInvoiceDate}
         dueDate={dueDate} setDueDate={setDueDate} supplyType={supplyType} setSupplyType={setSupplyType}
         paidStatus={paidStatus} setPaidStatus={setPaidStatus} docType={docType} setDocType={setDocType}
