@@ -1436,25 +1436,37 @@ export default function App() {
     setDbPro(false);
   };
 
-  const handleGoogleLogin = async (setLoading, setError) => {
-    console.log("GOOGLE LOGIN CLICKED - TRIGGERED");
-    if (setLoading) setLoading(true);
-    if (setError) setError("");
-    console.log("handleGoogleLogin triggered", { auth, googleProvider, signInWithRedirect });
-    setLoading(true);
-    setError("");
+  const handleGoogleLogin = async (setAuthLoading, setAuthError) => {
+    console.log("GOOGLE LOGIN INITIATED");
+    if (setAuthLoading) setAuthLoading(true);
+    if (setAuthError) setAuthError("");
+    
     try {
-      if (typeof signInWithRedirect !== 'function') {
-        throw new Error("signInWithRedirect is not a function! Firebase import failed.");
+      console.log("Using signInWithPopup...");
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Google Popup Success:", result.user.email);
+      
+      setUser(result.user);
+      setShowLogin(false);
+      
+      // Handle the target plan logic
+      const target = localStorage.getItem("bk_target_plan") || targetPlan;
+      if (target && target !== "free") {
+        console.log("Post-login: Triggering payment for", target);
+        setTimeout(() => openRazorpay(target), 500);
       }
-      // Use Redirect instead of Popup for maximum reliability
-      localStorage.setItem("bk_target_plan", targetPlan || "free");
-      localStorage.setItem("bk_redirect_step", step || "form");
-      await signInWithRedirect(auth, googleProvider);
     } catch (err) {
       console.error("Google Login Error:", err);
-      setError(`Google Login failed: ${err.message}`);
-      setLoading(false);
+      if (setAuthError) setAuthError(`Google Login failed: ${err.message}`);
+      // Fallback to redirect if popup is blocked
+      if (err.code === 'auth/popup-blocked') {
+        console.log("Popup blocked, falling back to redirect...");
+        localStorage.setItem("bk_target_plan", targetPlan || "free");
+        localStorage.setItem("bk_redirect_step", step || "form");
+        await signInWithRedirect(auth, googleProvider);
+      }
+    } finally {
+      if (setAuthLoading) setAuthLoading(false);
     }
   };
 
