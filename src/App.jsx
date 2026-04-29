@@ -1437,6 +1437,9 @@ export default function App() {
   };
 
   const handleGoogleLogin = async (setLoading, setError) => {
+    console.log("GOOGLE LOGIN CLICKED - TRIGGERED");
+    if (setLoading) setLoading(true);
+    if (setError) setError("");
     console.log("handleGoogleLogin triggered", { auth, googleProvider, signInWithRedirect });
     setLoading(true);
     setError("");
@@ -1748,20 +1751,7 @@ export default function App() {
           <button style={S.btnSecondary} onClick={() => setStep("preview")}>← Back</button>
         </div>
       </div>
-      {showLogin && (
-        <AuthModal 
-          setShowLogin={setShowLogin} 
-          setUser={setUser} 
-          targetPlan={targetPlan} 
-          setTargetPlan={setTargetPlan} 
-          setPlan={setPlan} 
-          syncProStatus={syncProStatus} 
-          openRazorpay={openRazorpay}
-          step={step} 
-          handleGoogleLogin={handleGoogleLogin}
-          user={user}
-        />
-      )}
+
 
       <div style={{ maxWidth: 800, margin: "60px auto", padding: "0 20px", width: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
@@ -1876,7 +1866,7 @@ export default function App() {
             )}
           </div>
         </div>
-        {showLogin && <AuthModal setShowLogin={setShowLogin} setUser={setUser} targetPlan={targetPlan} setTargetPlan={setTargetPlan} setPlan={setPlan} syncProStatus={syncProStatus} openRazorpay={openRazorpay} handleGoogleLogin={handleGoogleLogin} user={user} />}
+
         <div style={{ padding: "40px 0" }}>
           <DashboardView 
             user={user} 
@@ -1923,7 +1913,7 @@ export default function App() {
             )}
           </div>
         </div>
-        {showLogin && <AuthModal setShowLogin={setShowLogin} setUser={setUser} targetPlan={targetPlan} setTargetPlan={setTargetPlan} setPlan={setPlan} syncProStatus={syncProStatus} openRazorpay={openRazorpay} handleGoogleLogin={handleGoogleLogin} user={user} />}
+
         <div style={{ padding: "40px 0" }}>
           <ExpensesView 
             expenses={expenses} 
