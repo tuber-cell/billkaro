@@ -221,7 +221,32 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
 
         {authError && <div style={{ ...S.errText, background: "rgba(239,68,68,0.1)", padding: 10, borderRadius: 8, marginBottom: 16 }}>{authError}</div>}
 
-        <button onClick={onGoogleLogin} disabled={authLoading} style={{ background: "#fff", color: "#1a2d45", border: "none", width: "100%", height: 48, borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 20 }}>
+        <button 
+          id="google-login-btn"
+          onClick={(e) => {
+            console.log("TOP-LEVEL CLICK DETECTED");
+            onGoogleLogin(e);
+          }} 
+          disabled={authLoading} 
+          style={{ 
+            background: "#fff", 
+            color: "#1a2d45", 
+            border: "3px solid #ff4444", // RED BORDER TO TEST VISIBILITY
+            width: "100%", 
+            height: 48, 
+            borderRadius: 8, 
+            fontWeight: 700, 
+            fontSize: 14, 
+            cursor: "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            gap: 10, 
+            marginBottom: 20,
+            position: "relative",
+            zIndex: 10001 // Ensure it's above everything
+          }}
+        >
           <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20" alt="G" />
           {authLoading ? "Connecting..." : "Continue with Google"}
         </button>
