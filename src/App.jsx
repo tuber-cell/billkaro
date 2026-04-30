@@ -223,20 +223,26 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
 
         <button 
           id="google-login-btn"
+          onMouseDown={(e) => {
+            console.log("MOUSEDOWN DETECTED");
+            onGoogleLogin(e);
+          }}
           onClick={(e) => {
-            console.log("TOP-LEVEL CLICK DETECTED");
+            e.preventDefault();
+            e.stopPropagation();
+            console.log("CLICK DETECTED");
             onGoogleLogin(e);
           }} 
           disabled={authLoading} 
           style={{ 
             background: "#fff", 
             color: "#1a2d45", 
-            border: "3px solid #ff4444", // RED BORDER TO TEST VISIBILITY
+            border: "5px solid #ff4444", // THICKER RED BORDER
             width: "100%", 
-            height: 48, 
+            height: 52, 
             borderRadius: 8, 
-            fontWeight: 700, 
-            fontSize: 14, 
+            fontWeight: 800, 
+            fontSize: 15, 
             cursor: "pointer", 
             display: "flex", 
             alignItems: "center", 
@@ -244,7 +250,9 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
             gap: 10, 
             marginBottom: 20,
             position: "relative",
-            zIndex: 10001 // Ensure it's above everything
+            zIndex: 99999, // OVER EVERYTHING
+            pointerEvents: "all",
+            userSelect: "none"
           }}
         >
           <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20" alt="G" />
