@@ -134,7 +134,7 @@ const BreakdownBox = ({ label, value }) => (
   </div>
 );
 
-const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, syncProStatus, openRazorpay, step, handleGoogleLogin, user }) => {
+const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, syncProStatus, openRazorpay, step, triggerGoogleLogin, user }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSignup, setIsSignup] = useState(false);
@@ -198,8 +198,17 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
     }
   };
 
-  const onGoogleLogin = () => {
-    handleGoogleLogin(setAuthLoading, setAuthError);
+  const onGoogleLogin = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    console.log("INTERNAL_AUTH: Calling triggerGoogleLogin");
+    if (typeof triggerGoogleLogin === 'function') {
+      triggerGoogleLogin(setAuthLoading, setAuthError);
+    } else {
+      console.error("triggerGoogleLogin is NOT a function!", triggerGoogleLogin);
+    }
   };
 
 
@@ -223,21 +232,12 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
 
         <button 
           id="google-login-btn"
-          onMouseDown={(e) => {
-            console.log("MOUSEDOWN DETECTED");
-            onGoogleLogin(e);
-          }}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log("CLICK DETECTED");
-            onGoogleLogin(e);
-          }} 
+          onClick={onGoogleLogin} 
           disabled={authLoading} 
           style={{ 
             background: "#fff", 
             color: "#1a2d45", 
-            border: "5px solid #ff4444", // THICKER RED BORDER
+            border: "5px solid #ff4444",
             width: "100%", 
             height: 52, 
             borderRadius: 8, 
@@ -250,9 +250,8 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
             gap: 10, 
             marginBottom: 20,
             position: "relative",
-            zIndex: 99999, // OVER EVERYTHING
-            pointerEvents: "all",
-            userSelect: "none"
+            zIndex: 99999,
+            pointerEvents: "all"
           }}
         >
           <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" width="20" alt="G" />
@@ -363,7 +362,7 @@ const InvoiceFormView = ({
         </div>
       </div>
 
-      {showLogin && <AuthModal setShowLogin={setShowLogin} setUser={setUser} targetPlan={targetPlan} setTargetPlan={setTargetPlan} setPlan={setPlan} syncProStatus={syncProStatus} openRazorpay={openRazorpay} />}
+      
 
 
       <div style={S.container} className="bk-container bk-form-bottom-pad">
@@ -2101,7 +2100,7 @@ export default function App() {
         )}
       </div>
 
-      {showLogin && <AuthModal setShowLogin={setShowLogin} setUser={setUser} targetPlan={targetPlan} setTargetPlan={setTargetPlan} setPlan={setPlan} syncProStatus={syncProStatus} openRazorpay={openRazorpay} handleGoogleLogin={handleGoogleLogin} user={user} />}
+      
 
 
       {/* Invoice */}
@@ -2310,6 +2309,19 @@ export default function App() {
           </div>
         </div>
       </div>
+      {showLogin && (
+        <AuthModal 
+          setShowLogin={setShowLogin} 
+          setUser={setUser} 
+          targetPlan={targetPlan} 
+          setTargetPlan={setTargetPlan} 
+          setPlan={setPlan} 
+          syncProStatus={syncProStatus} 
+          openRazorpay={openRazorpay} 
+          triggerGoogleLogin={handleGoogleLogin} 
+          user={user} 
+        />
+      )}
     </div>
   );
 }
