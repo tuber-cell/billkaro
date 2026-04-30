@@ -199,14 +199,7 @@ const AuthModal = ({ setShowLogin, setUser, targetPlan, setTargetPlan, setPlan, 
   };
 
   const onGoogleLogin = () => {
-    console.log("DEBUG: Google Login Button Clicked - Calling handleGoogleLogin");
-    // Ensure we are calling the prop handleGoogleLogin
-    if (typeof handleGoogleLogin === 'function') {
-      handleGoogleLogin(setAuthLoading, setAuthError);
-    } else {
-      console.error("handleGoogleLogin is not a function!", handleGoogleLogin);
-      alert("Error: Login logic missing. Please refresh.");
-    }
+    handleGoogleLogin(setAuthLoading, setAuthError);
   };
 
 
