@@ -1446,14 +1446,20 @@ export default function App() {
   };
 
   const handleGoogleLogin = async (setAuthLoading, setAuthError) => {
-    console.log("GOOGLE LOGIN INITIATED");
-    if (setAuthLoading) setAuthLoading(true);
+    console.log("APP_LOG: handleGoogleLogin - START");
+    console.log("APP_LOG: Auth state:", { auth: !!auth, provider: !!googleProvider });
+    if (setAuthLoading) {
+      console.log("APP_LOG: Setting loading state");
+      setAuthLoading(true);
+    }
     if (setAuthError) setAuthError("");
     
     try {
-      console.log("Using signInWithPopup...");
+      console.log("APP_LOG: Invoking signInWithPopup...");
+      if (!auth || !googleProvider) throw new Error("Firebase Auth or Google Provider not initialized!");
+      
       const result = await signInWithPopup(auth, googleProvider);
-      console.log("Google Popup Success:", result.user.email);
+      console.log("APP_LOG: Google Popup Success:", result.user.email);
       
       setUser(result.user);
       setShowLogin(false);
