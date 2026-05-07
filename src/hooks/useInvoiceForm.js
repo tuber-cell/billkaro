@@ -100,19 +100,33 @@ export function useInvoiceForm() {
 
   const validate = () => {
     const e = {};
-    if (!seller.name?.trim()) e.sellerName = true;
-    if (!buyer.name?.trim()) e.buyerName = true;
+    console.log("Validating form...", { seller: seller.name, buyer: buyer.name, itemsCount: items.length });
+    
+    if (!seller.name?.trim()) {
+      console.log("Validation Failed: Seller Name missing");
+      e.sellerName = true;
+    }
+    if (!buyer.name?.trim()) {
+      console.log("Validation Failed: Buyer Name missing");
+      e.buyerName = true;
+    }
     
     // Only validate items that aren't completely empty
     const activeItems = items.filter(i => i.desc?.trim() || i.rate);
+    console.log("Active items:", activeItems.length);
+    
     if (activeItems.length === 0) {
+      console.log("Validation Failed: No active items");
       e.items = true;
     } else if (activeItems.some(i => !i.desc?.trim() || !i.rate)) {
+      console.log("Validation Failed: Some items missing description or rate");
       e.items = true;
     }
     
     setErrors(e);
-    return Object.keys(e).length === 0;
+    const isValid = Object.keys(e).length === 0;
+    console.log("Is Form Valid?", isValid);
+    return isValid;
   };
 
   const resetForm = () => {

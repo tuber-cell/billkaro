@@ -374,7 +374,7 @@ const InvoiceFormView = ({
           )}
           <button
             style={{ ...S.btnSecondary, background: "rgba(52,211,153,0.12)", color: "#34d399", borderColor: "rgba(52,211,153,0.4)", fontWeight: 700 }}
-            onClick={handleSaveAndNext}
+            onClick={() => { console.log("Desktop Save & Next Clicked"); handleSaveAndNext(); }}
           >
             💾 Save &amp; Next Invoice
           </button>
@@ -398,7 +398,7 @@ const InvoiceFormView = ({
           >
             {exporting ? "⏳ Building…" : "📦 Export All to Excel"}
           </button>
-          <button style={S.btnPrimary} onClick={handlePreview}>Preview &amp; Download →</button>
+          <button style={S.btnPrimary} onClick={() => { console.log("Desktop Preview Clicked"); handlePreview(); }}>Preview &amp; Download →</button>
         </div>
       </div>
 
@@ -425,8 +425,8 @@ const InvoiceFormView = ({
             📦
           </button>
         )}
-        <button style={{ ...S.btnSecondary, flex: 1, fontSize: 11 }} onClick={handleSaveAndNext}>💾 Save &amp; Next</button>
-        <button style={{ ...S.btnPrimary, flex: 1.5 }} onClick={handlePreview}>Preview →</button>
+        <button style={{ ...S.btnSecondary, flex: 1, fontSize: 11 }} onClick={() => { console.log("Mobile Save & Next Clicked"); handleSaveAndNext(); }}>💾 Save &amp; Next</button>
+        <button style={{ ...S.btnPrimary, flex: 1.5 }} onClick={() => { console.log("Mobile Preview Clicked"); handlePreview(); }}>Preview →</button>
       </div>
     </div>
   );

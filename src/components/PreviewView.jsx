@@ -95,13 +95,46 @@ const PreviewView = ({
 
         {user ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 10 }}>
+             {!isPro && (
+              <button 
+                style={{ 
+                  background: "linear-gradient(135deg, #b8860b, #d4af37)", 
+                  border: "none", 
+                  color: "#0f1923", 
+                  padding: "6px 12px", 
+                  borderRadius: 6, 
+                  fontSize: 11, 
+                  fontWeight: 900, 
+                  cursor: "pointer",
+                  boxShadow: "0 4px 12px rgba(212,175,55,0.2)"
+                }} 
+                onClick={() => setStep("upgrade")}
+              >
+                🚀 UPGRADE
+              </button>
+            )}
             <div style={{ textAlign: "right", lineHeight: 1 }}>
               <div style={{ color: "#e8edf2", fontSize: 11, fontWeight: 600 }}>{user.email || user.phoneNumber}</div>
               <div style={{ color: "#d4af37", fontSize: 9 }}>{dbPro ? (PLANS[plan]?.label || "Pro Account") : "Free Plan"}</div>
             </div>
           </div>
         ) : (
-          <button style={{ ...S.btnSecondary, fontSize: 12, padding: "6px 12px", marginRight: 10 }} onClick={() => setShowLogin(true)}>Login</button>
+          <button 
+            style={{ 
+                background: "linear-gradient(135deg, #b8860b, #d4af37)", 
+                border: "none", 
+                color: "#0f1923", 
+                padding: "6px 12px", 
+                borderRadius: 6, 
+                fontSize: 11, 
+                fontWeight: 900, 
+                cursor: "pointer",
+                marginRight: 10
+            }} 
+            onClick={() => setStep("upgrade")}
+          >
+            🚀 GET PRO
+          </button>
         )}
 
         <button style={{ ...S.btnSecondary, fontSize: 13, padding: "8px 20px" }} onClick={() => {

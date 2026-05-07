@@ -140,8 +140,11 @@ export default function App() {
 
 
   const handlePreview = async () => {
+    console.log("handlePreview triggered");
     try {
-      if (!validate()) {
+      const isValid = validate();
+      console.log("Validation result:", isValid);
+      if (!isValid) {
         alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
         return;
       }
@@ -164,8 +167,11 @@ export default function App() {
   };
 
   const handleSaveAndNext = async () => {
+    console.log("handleSaveAndNext triggered");
     try {
-      if (!validate()) {
+      const isValid = validate();
+      console.log("Validation result:", isValid);
+      if (!isValid) {
           alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
           return;
       }
