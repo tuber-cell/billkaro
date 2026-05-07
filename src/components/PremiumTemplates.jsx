@@ -111,95 +111,175 @@ export const ExecutivePro = ({ data }) => (
   </div>
 );
 
-// 3. STANDARD CLEAN (The Classic / Familiar)
+// 3. STANDARD CLEAN (The BillKaro Classic)
 export const StandardClean = ({ data }) => (
-  <div style={{ background: "white", minHeight: "29.7cm", width: "21cm", fontFamily: "'Inter', sans-serif", overflow: "hidden", position: "relative", color: "#1e293b", padding: 0 }}>
-    <div style={{ background: "linear-gradient(135deg, #0f1923 0%, #1a3a5c 100%)", padding: "40px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+  <div style={{ background: "white", minHeight: "29.7cm", width: "21cm", fontFamily: "'DM Sans', sans-serif", overflow: "hidden", position: "relative", color: "#1e293b", padding: "0 40px" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "40px 0 20px" }}>
       <div>
-        {data.sellerLogo && <img src={data.sellerLogo} alt="Logo" style={{ height: 60, maxWidth: 200, objectFit: "contain", marginBottom: 15 }} />}
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#d4af37", textTransform: "uppercase" }}>{data.docType}</div>
-        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>#{data.invoicePrefix}{data.invoiceNum}</div>
+        {data.sellerLogo && <img src={data.sellerLogo} alt="Logo" style={{ height: 60, maxWidth: 200, objectFit: "contain", marginBottom: 20 }} />}
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 42, color: "#b8860b", margin: 0, fontWeight: 400, letterSpacing: "1px" }}>{data.docType.toUpperCase()}</h1>
+        <div style={{ fontSize: 14, color: "#8899aa", marginTop: 4 }}>#{data.invoicePrefix}{data.invoiceNum}</div>
+        <div style={{ marginTop: 15 }}>
+            <span style={{ 
+                border: "1px solid #d4af37", 
+                color: "#d4af37", 
+                padding: "6px 14px", 
+                borderRadius: 20, 
+                fontSize: 11, 
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6
+            }}>
+                ⌛ {data.paidStatus === "paid" ? "PAYMENT SUCCESS" : "PAYMENT PENDING"}
+            </span>
+        </div>
+      </div>
+      <div style={{ textAlign: "right", maxWidth: 300 }}>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#888", marginBottom: 6, fontWeight: 400 }}>{data.seller.name || "Your Business"}</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#b8860b", marginBottom: 4 }}>GSTIN: {data.seller.gstin || "N/A"}</div>
+        <div style={{ fontSize: 11, color: "#64748b", lineHeight: "1.5" }}>
+            {data.seller.address}<br/>
+            {data.seller.email}<br/>
+            {data.seller.phone}
+        </div>
+      </div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20, padding: "20px 0", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9", marginBottom: 30 }}>
+      <div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>Invoice Date</div>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>{data.invoiceDate}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>Due Date</div>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>{data.dueDate || data.invoiceDate}</div>
+      </div>
+      <div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 8 }}>Supply Type</div>
+        <div style={{ fontSize: 16, fontWeight: 700 }}>{data.supplyType === "intra" ? "Intra-State" : "Inter-State"}</div>
+      </div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50, marginBottom: 40 }}>
+      <div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Billed By</div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{data.seller.name}</div>
+        <div style={{ fontSize: 12, color: "#475569", lineHeight: "1.6" }}>
+          GSTIN: {data.seller.gstin}<br/>
+          {data.seller.address}<br/>
+          {data.seller.email}<br/>
+          {data.seller.phone}
+        </div>
+      </div>
+      <div>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", marginBottom: 12 }}>Billed To</div>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "#1e293b", marginBottom: 4 }}>{data.buyer.name}</div>
+        <div style={{ fontSize: 12, color: "#475569", lineHeight: "1.6" }}>
+          GSTIN: {data.buyer.gstin}<br/>
+          {data.buyer.address}<br/>
+          {data.buyer.email}<br/>
+          {data.buyer.phone}
+        </div>
+      </div>
+    </div>
+
+    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <thead>
+        <tr>
+          <th style={{ textAlign: "left", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase", width: 40 }}>#</th>
+          <th style={{ textAlign: "left", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>Description</th>
+          <th style={{ textAlign: "center", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>Qty</th>
+          <th style={{ textAlign: "right", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>Rate</th>
+          <th style={{ textAlign: "right", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>GST %</th>
+          <th style={{ textAlign: "right", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>CGST</th>
+          <th style={{ textAlign: "right", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>SGST</th>
+          <th style={{ textAlign: "right", padding: "12px 0", fontSize: 11, fontWeight: 700, color: "#b8860b", textTransform: "uppercase" }}>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.items.map((item, i) => {
+          const c = data.calcItem(item);
+          return (
+            <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <td style={{ padding: "15px 0", fontSize: 13 }}>{i + 1}</td>
+              <td style={{ padding: "15px 0", fontSize: 14, fontWeight: 600 }}>{item.desc}</td>
+              <td style={{ padding: "15px 0", fontSize: 13, textAlign: "center" }}>{item.qty}</td>
+              <td style={{ padding: "15px 0", fontSize: 13, textAlign: "right" }}>₹{parseFloat(item.rate).toLocaleString()}</td>
+              <td style={{ padding: "15px 0", fontSize: 13, textAlign: "right" }}>{item.gstRate}%</td>
+              <td style={{ padding: "15px 0", fontSize: 13, textAlign: "right" }}>₹{(c.gstAmt / 2).toFixed(2)}</td>
+              <td style={{ padding: "15px 0", fontSize: 13, textAlign: "right" }}>₹{(c.gstAmt / 2).toFixed(2)}</td>
+              <td style={{ padding: "15px 0", fontSize: 14, fontWeight: 700, textAlign: "right", color: "#1a3a5c" }}>₹{c.total.toLocaleString()}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+
+    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+      <div style={{ width: 280 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 14, color: "#64748b" }}>
+          <span>Taxable Amount</span>
+          <span style={{ fontWeight: 600 }}>₹{data.totals.taxable.toLocaleString()}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 14, color: "#64748b" }}>
+          <span>CGST</span>
+          <span style={{ fontWeight: 600 }}>₹{(data.totals.gst / 2).toLocaleString()}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", fontSize: 14, color: "#64748b" }}>
+          <span>SGST</span>
+          <span style={{ fontWeight: 600 }}>₹{(data.totals.gst / 2).toLocaleString()}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", padding: "20px 0", marginTop: 10, borderTop: "2px solid #f1f5f9" }}>
+          <span style={{ fontSize: 20, fontWeight: 700, color: "#b8860b" }}>TOTAL DUE</span>
+          <span style={{ fontSize: 24, fontWeight: 900, color: "#b8860b" }}>₹{data.totals.total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+
+    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, alignItems: "flex-end" }}>
+      <div style={{ background: "#fff", border: "1px solid #e2e8f0", padding: "20px", borderRadius: 12, width: 340 }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 15 }}>Bank & Payment Details</div>
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#777" }}>Bank Name:</span>
+            <span style={{ fontWeight: 700 }}>{data.seller.bankName}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#777" }}>Account No:</span>
+            <span style={{ fontWeight: 700 }}>{data.seller.accountNum}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#777" }}>IFSC Code:</span>
+            <span style={{ fontWeight: 700 }}>{data.seller.ifsc}</span>
+          </div>
+          <div style={{ height: 1, borderTop: "1px dashed #e2e8f0", margin: "5px 0" }}></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+            <span style={{ color: "#777" }}>UPI ID:</span>
+            <span style={{ fontWeight: 800, color: "#b8860b" }}>{data.seller.upi}</span>
+          </div>
+        </div>
       </div>
       <div style={{ textAlign: "right" }}>
-        <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 5 }}>{data.seller.name || "Your Business"}</div>
-        <div style={{ fontSize: 12, color: "#d4af37", fontWeight: 700 }}>GSTIN: {data.seller.gstin || "N/A"}</div>
-        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 5, maxWidth: 250, marginLeft: "auto" }}>{data.seller.address}</div>
-      </div>
-    </div>
-
-    <div style={{ padding: "30px 50px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50, marginBottom: 40 }}>
-        <div>
-          <div style={T_S.label}>Billed To</div>
-          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 5 }}>{data.buyer.name}</div>
-          <div style={T_S.address}>{data.buyer.address}</div>
-          {data.buyer.gstin && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 10 }}>GSTIN: {data.buyer.gstin}</div>}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div><div style={T_S.label}>Date</div><div style={{ fontSize: 13, fontWeight: 700 }}>{data.invoiceDate}</div></div>
-          <div><div style={T_S.label}>Due Date</div><div style={{ fontSize: 13, fontWeight: 700 }}>{data.dueDate || "On Receipt"}</div></div>
-        </div>
-      </div>
-
-      <table style={{ ...T_S.table, marginTop: 0 }}>
-        <thead>
-          <tr style={{ background: "#f8fafc" }}>
-            <th style={{ ...T_S.th, padding: "12px" }}>Description</th>
-            <th style={{ ...T_S.th, textAlign: "right", width: 80 }}>Qty</th>
-            <th style={{ ...T_S.th, textAlign: "right", width: 100 }}>Rate</th>
-            <th style={{ ...T_S.th, textAlign: "right", width: 120 }}>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.items.map((item, i) => (
-            <tr key={i}>
-              <td style={{ ...T_S.td, padding: "12px" }}>
-                <div style={{ fontWeight: 700 }}>{item.desc}</div>
-                {item.hsn && <div style={{ fontSize: 10, color: "#94a3b8" }}>HSN: {item.hsn}</div>}
-              </td>
-              <td style={{ ...T_S.td, textAlign: "right" }}>{item.qty}</td>
-              <td style={{ ...T_S.td, textAlign: "right" }}>{fmt(item.rate)}</td>
-              <td style={{ ...T_S.td, textAlign: "right", fontWeight: 700 }}>{fmt(item.qty * item.rate)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30 }}>
-        <UPI_QR seller={data.seller} total={data.totals.total} />
-        <div style={{ width: 280 }}>
-          <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>Subtotal</span><span>{fmt(data.totals.subtotal)}</span></div>
-          <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>Tax (GST)</span><span>{fmt(data.totals.tax)}</span></div>
-          <div style={{ ...T_S.totalRow, color: "#0f1923", borderTop: "2px solid #0f1923", paddingTop: 15, fontSize: 24 }}>
-            <span>Total</span><span>{fmt(data.totals.total)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: 50, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50, alignItems: "flex-end" }}>
-        <div>
-          <div style={T_S.label}>Bank Details</div>
-          <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.6 }}>
-            <div>Bank: {data.seller.bankName}</div>
-            <div>A/C: {data.seller.accountNum}</div>
-            <div>IFSC: {data.seller.ifsc}</div>
-          </div>
-          {data.notes && (
-            <div style={{ marginTop: 20 }}>
-              <div style={T_S.label}>Notes</div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>{data.notes}</div>
-            </div>
-          )}
-        </div>
-        <div style={{ textAlign: "right" }}>
-          {data.sellerSignature && <img src={data.sellerSignature} style={{ maxHeight: 50, marginBottom: 10 }} alt="sign" />}
-          <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 10, fontSize: 11, fontWeight: 800 }}>AUTHORIZED SIGNATORY</div>
+        <div style={{ fontSize: 13, fontWeight: 800, color: "#1a3a5c", marginBottom: 40 }}>For {data.seller.name}</div>
+        <div style={{ textAlign: "center" }}>
+          {data.sellerSignature && <img src={data.sellerSignature} style={{ maxHeight: 60, marginBottom: 10 }} alt="sign" />}
+          <div style={{ fontSize: 12, fontWeight: 800, color: "#1a3a5c" }}>Authorized Signatory</div>
+          <div style={{ fontSize: 10, color: "#8899aa", marginTop: 4 }}>This is a computer generated invoice</div>
         </div>
       </div>
     </div>
-    
-    <div style={{ position: "absolute", bottom: 40, left: 50, right: 50, textAlign: "center", fontSize: 10, color: "#94a3b8", borderTop: "1px solid #f1f5f9", paddingTop: 20 }}>
-      Generated via BillKaro · Secure GST Invoicing
+
+    {data.notes && (
+      <div style={{ marginTop: 40, padding: "20px 0", borderTop: "1px solid #f1f5f9" }}>
+        <div style={{ fontSize: 10, color: "#888", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }}>Notes</div>
+        <div style={{ fontSize: 12, color: "#475569" }}>{data.notes}</div>
+      </div>
+    </div>
+    )}
+
+    <div style={{ textAlign: "center", padding: "40px 0", fontSize: 10, color: "#94a3b8" }}>
+        Generated with <span style={{ fontWeight: 700, color: "#b8860b" }}>BillKaro</span> · Secure GST Compliant Digital Invoice
     </div>
   </div>
 );
