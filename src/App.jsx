@@ -116,20 +116,24 @@ export default function App() {
   }, [user, targetPlan, loading]);
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || authLoading) return;
     const refresh = () => {
-      if (user) {
+      if (user?.uid) {
         getDocs(query(collection(db, "users", user.uid, "invoices")))
           .then(s => setArchiveCount(s.size))
           .catch(err => {
-            console.warn("Failed to fetch archive count:", err);
+            if (err.code === 'permission-denied') {
+              console.warn("Permission denied for archive count. This usually means the Firestore rules need to be deployed.");
+            } else {
+              console.warn("Failed to fetch archive count:", err);
+            }
             setArchiveCount(0);
           });
       }
       else setArchiveCount(getLocalArchive().length);
     };
     refresh();
-  }, [user, loading, step]);
+  }, [user, loading, authLoading, step]);
 
   const isPro = user ? dbPro : plan === "pro";
   const canDownload = isPro || dailyLeft > 0;
