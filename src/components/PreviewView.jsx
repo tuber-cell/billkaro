@@ -14,7 +14,7 @@ const PreviewView = ({
   trackInvoiceEvent, getInvoiceStatus, INVOICE_STATUSES
 }) => {
   const [showEwayHelper, setShowEwayHelper] = useState(false);
-  const [templateId, setTemplateId] = useState(() => localStorage.getItem("bk_template_id") || "luxury");
+  const [templateId, setTemplateId] = useState(() => localStorage.getItem("bk_template_id") || "executive");
 
   const changeTemplate = (id) => {
     setTemplateId(id);
@@ -145,7 +145,7 @@ const PreviewView = ({
 
         {isPro && (
             <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10 }}>
-                {["luxury", "modern", "minimal", "midnight", "classic", "creative"].map(id => (
+                {["executive", "minimal"].map(id => (
                     <button 
                         key={id} 
                         onClick={() => changeTemplate(id)}
@@ -153,7 +153,7 @@ const PreviewView = ({
                             background: templateId === id ? "rgba(212,175,55,0.2)" : "transparent",
                             border: templateId === id ? "1px solid rgba(212,175,55,0.4)" : "1px solid transparent",
                             color: templateId === id ? "#d4af37" : "#8899aa",
-                            padding: "4px 8px",
+                            padding: "4px 12px",
                             borderRadius: 6,
                             fontSize: 10,
                             fontWeight: 700,
