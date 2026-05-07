@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { S, fmt, today } from "./common/Constants";
 import Header from "./common/Header";
-import PremiumTemplate from "./PremiumTemplate";
+import PremiumTemplates from "./PremiumTemplates";
 
 const PreviewView = ({ 
   step, setStep, user, dbPro, plan, PLANS, 
@@ -14,6 +14,12 @@ const PreviewView = ({
   trackInvoiceEvent, getInvoiceStatus, INVOICE_STATUSES
 }) => {
   const [showEwayHelper, setShowEwayHelper] = useState(false);
+  const [templateId, setTemplateId] = useState(() => localStorage.getItem("bk_template_id") || "luxury");
+
+  const changeTemplate = (id) => {
+    setTemplateId(id);
+    localStorage.setItem("bk_template_id", id);
+  };
 
   useEffect(() => {
     // Only track viewed if it was draft
@@ -137,6 +143,30 @@ const PreviewView = ({
           </button>
         )}
 
+        {isPro && (
+            <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10 }}>
+                {["luxury", "modern", "minimal", "midnight", "classic", "creative"].map(id => (
+                    <button 
+                        key={id} 
+                        onClick={() => changeTemplate(id)}
+                        style={{ 
+                            background: templateId === id ? "rgba(212,175,55,0.2)" : "transparent",
+                            border: templateId === id ? "1px solid rgba(212,175,55,0.4)" : "1px solid transparent",
+                            color: templateId === id ? "#d4af37" : "#8899aa",
+                            padding: "4px 8px",
+                            borderRadius: 6,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            textTransform: "capitalize"
+                        }}
+                    >
+                        {id}
+                    </button>
+                ))}
+            </div>
+        )}
+
         <button style={{ ...S.btnSecondary, fontSize: 13, padding: "8px 20px" }} onClick={() => {
           if (cameFromDashboard) {
             setCameFromDashboard(false);
@@ -211,7 +241,8 @@ const PreviewView = ({
         onDragStart={(e) => e.preventDefault()}
       >
         {isPro ? (
-          <PremiumTemplate
+          <PremiumTemplates
+            templateId={templateId}
             docType={docType} invoicePrefix={invoicePrefix} invoiceNum={invoiceNum}
             invoiceDate={invoiceDate} dueDate={dueDate} supplyType={supplyType}
             paidStatus={paidStatus} seller={seller} sellerLogo={sellerLogo}
