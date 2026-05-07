@@ -4,6 +4,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { db } from "../lib/firebase";
+import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const HISTORY_KEY     = "bk_invoice_history"; // localStorage key
@@ -95,43 +97,53 @@ const frequentItems = (invoices) => {
 // ══════════════════════════════════════════════════════════════════════════════
 // MAIN HOOK
 // ══════════════════════════════════════════════════════════════════════════════
-export function useHistoryLookup({ buyer, seller, items, supplyType }) {
+export function useHistoryLookup({ buyer, seller, items, supplyType, user }) {
   const [suggestion, setSuggestion]   = useState(null);   // current suggestions
   const [warnings, setWarnings]       = useState([]);      // mismatch warnings
   const [history, setHistory]         = useState(loadHistory);
   const debounceRef                   = useRef(null);
 
-  // ── 1. Analyze history when buyer name changes ────────────────────────────
-  useEffect(() => {
-    // Debounce — don't analyze on every keystroke
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      analyzeBuyer(buyer.name);
-    }, 100);
-
-    return () => clearTimeout(debounceRef.current);
-  }, [buyer.name, history]);
-
-  // ── 2. Check for mismatches when buyer fields change ─────────────────────
-  useEffect(() => {
-    if (!suggestion || !buyer.name) return;
-    detectMismatches();
-  }, [buyer.gstin, buyer.state, buyer.city, items]);
-
   // ── Core: analyze last 5 invoices for this buyer ──────────────────────────
-  const analyzeBuyer = useCallback((buyerName) => {
+  const analyzeBuyer = useCallback(async (buyerName) => {
     if (!buyerName || buyerName.trim().length < 2) {
       setSuggestion(null);
       setWarnings([]);
       return;
     }
 
-    // Find last 5 invoices for this buyer (case-insensitive)
-    const buyerHistory = history
-      .filter(inv =>
-        inv.buyer?.name?.toLowerCase().includes(buyerName.toLowerCase())
-      )
-      .slice(-LOOKUP_LIMIT);
+    let buyerHistory = [];
+
+    if (user) {
+      // Fetch from Firestore for logged-in users
+      try {
+        const q = query(
+          collection(db, "users", user.uid, "invoices"),
+          where("buyer.name", "==", buyerName),
+          orderBy("invoiceDate", "desc"),
+          limit(LOOKUP_LIMIT)
+        );
+        const snap = await getDocs(q);
+        buyerHistory = snap.docs.map(doc => doc.data());
+        
+        // If exact match fails, try case-insensitive partial match from local history as fallback
+        if (buyerHistory.length === 0) {
+          buyerHistory = history
+            .filter(inv => inv.buyer?.name?.toLowerCase().includes(buyerName.toLowerCase()))
+            .slice(-LOOKUP_LIMIT);
+        }
+      } catch (err) {
+        console.error("Firestore history lookup failed:", err);
+        // Fallback to local
+        buyerHistory = history
+          .filter(inv => inv.buyer?.name?.toLowerCase().includes(buyerName.toLowerCase()))
+          .slice(-LOOKUP_LIMIT);
+      }
+    } else {
+      // Guest: Use local history
+      buyerHistory = history
+        .filter(inv => inv.buyer?.name?.toLowerCase().includes(buyerName.toLowerCase()))
+        .slice(-LOOKUP_LIMIT);
+    }
     
     console.log("🔍 History Engine:", buyerName, "found", buyerHistory.length, "matches");
 
@@ -298,6 +310,23 @@ export function useHistoryLookup({ buyer, seller, items, supplyType }) {
     setSuggestion(null);
     setWarnings([]);
   }, [history]);
+  
+  // ── 1. Analyze history when buyer name changes ────────────────────────────
+  useEffect(() => {
+    // Debounce — don't analyze on every keystroke
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      analyzeBuyer(buyer.name);
+    }, 100);
+
+    return () => clearTimeout(debounceRef.current);
+  }, [buyer.name, history, analyzeBuyer]);
+
+  // ── 2. Check for mismatches when buyer fields change ─────────────────────
+  useEffect(() => {
+    if (!suggestion || !buyer.name) return;
+    detectMismatches();
+  }, [buyer.gstin, buyer.state, buyer.city, items, suggestion, buyer.name, detectMismatches]);
 
   return {
     suggestion,        // autofill data to show

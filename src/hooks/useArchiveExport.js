@@ -14,7 +14,7 @@
 import { useState, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { db, auth } from "../lib/firebase";
-import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 // ── State Codes for GSTR-1 ──────────────────────────────────────────────────
 const STATE_CODES = {
@@ -125,18 +125,32 @@ export function useArchiveExport() {
       const merged = mergeInvoices(archive, currentInvoice);
 
       // ── Filter out any corrupted or empty invoices ────────────────────────
+      console.log("EXPORT_DEBUG: Starting merge/filter", { archiveCount: archive.length, hasCurrent: !!currentInvoice });
+      
       const validInvoices = merged.filter(inv => {
         const hasItems = inv.items && inv.items.length > 0;
         const hasTotal = hasItems && inv.items.some(i => (parseFloat(i.rate) || 0) > 0);
-        const hasDescription = hasItems && inv.items.some(i => i.desc?.trim());
         
-        // Accept if it has a number AND (a buyer name OR a total > 0 OR a description)
-        return inv.invoiceNum && (inv.buyer?.name?.trim() || hasTotal || hasDescription);
+        // Much more relaxed: if it has a number and EITHER a name or a total, it's good.
+        const isValid = inv.invoiceNum && (inv.buyer?.name?.trim() || hasTotal);
+        
+        if (!isValid) {
+          console.warn("EXPORT_DEBUG: Skipping invalid invoice:", { 
+            num: inv.invoiceNum, 
+            buyer: inv.buyer?.name, 
+            items: inv.items?.length,
+            hasTotal 
+          });
+        }
+        return isValid;
       });
 
       if (validInvoices.length === 0) {
-        console.warn("Archive export blocked: No valid data found.", { merged });
-        alert("No completed invoices found in your archive to export. Please 'Save & Next' or fill in the current form first.");
+        console.error("Archive export blocked: No valid data found.", { 
+          totalMerged: merged.length,
+          mergedSample: merged.slice(0, 2)
+        });
+        alert("No valid invoices found to export. Please ensure you have saved invoices or a completed form.");
         setExporting(false);
         return;
       }
@@ -234,7 +248,7 @@ export function useArchiveExport() {
         
         b2bMap[ctin].inv.push({
           inum: inv.invoiceNum,
-          idt: inv.invoiceDate.split('-').reverse().join('-'), // DD-MM-YYYY
+          idt: (inv.invoiceDate && typeof inv.invoiceDate === 'string') ? inv.invoiceDate.split('-').reverse().join('-') : "", // DD-MM-YYYY
           val: Number((taxableVal + gstVal).toFixed(2)),
           pos: STATE_CODES[inv.buyer.state] || "27",
           rchrg: "N",

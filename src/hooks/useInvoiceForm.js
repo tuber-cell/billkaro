@@ -1,0 +1,133 @@
+import { useState, useEffect } from "react";
+import { 
+  invoiceNo, today, emptyItem, loadJSON, saveJSON 
+} from "../components/common/Constants";
+
+export const INVOICE_STATUSES = {
+    DRAFT: { label: "Draft", color: "#8899aa", icon: "📝" },
+    SENT: { label: "Sent", color: "#60a5fa", icon: "📤" },
+    VIEWED: { label: "Viewed", color: "#fbbf24", icon: "👁️" },
+    PAID: { label: "Paid", color: "#34d399", icon: "✅" },
+    OVERDUE: { label: "Overdue", color: "#ef4444", icon: "🚨" },
+};
+
+export const trackInvoiceEvent = (invoiceNum, event) => {
+    const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+    if (!tracking[invoiceNum]) {
+        tracking[invoiceNum] = { events: [], status: "DRAFT" };
+    }
+    tracking[invoiceNum].events.push({
+        event,
+        timestamp: new Date().toISOString()
+    });
+    tracking[invoiceNum].status = event;
+    localStorage.setItem("bk_invoice_tracking", JSON.stringify(tracking));
+};
+
+export const getInvoiceStatus = (invoiceNum) => {
+    const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+    return tracking[invoiceNum]?.status || "DRAFT";
+};
+
+export function useInvoiceForm() {
+  const [invoiceNum, setInvoiceNum] = useState(invoiceNo());
+  const [invoiceDate, setInvoiceDate] = useState(today());
+  const [dueDate, setDueDate] = useState("");
+  const [supplyType, setSupplyType] = useState(() => localStorage.getItem("bk_supply_type") || "intra");
+  const [docType, setDocType] = useState(() => localStorage.getItem("bk_doc_type") || "Tax Invoice");
+  const [invoicePrefix, setInvoicePrefix] = useState(() => localStorage.getItem("bk_inv_prefix") || "INV-");
+  const [watermark, setWatermark] = useState(() => localStorage.getItem("bk_watermark") || "");
+  const [notes, setNotes] = useState("Thank you for your business!");
+  const [paidStatus, setPaidStatus] = useState("unpaid");
+  const [showUpiQr, setShowUpiQr] = useState(() => localStorage.getItem("bk_show_qr") === "true");
+  
+  const [sellerLogo, setSellerLogo] = useState(() => localStorage.getItem("bk_seller_logo") || "");
+  const [sellerSignature, setSellerSignature] = useState(() => localStorage.getItem("bk_seller_sig") || "");
+  
+  const [savedSeller, setSavedSeller] = useState(() => loadJSON("bk_seller", null));
+  const [savedClients, setSavedClients] = useState(() => loadJSON("bk_clients", []));
+
+  const [seller, setSeller] = useState(savedSeller || { 
+    name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", 
+    email: "", phone: "", bankName: "", accountNum: "", ifsc: "", upi: "" 
+  });
+  const [buyer, setBuyer] = useState({ 
+    name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", 
+    email: "", phone: "" 
+  });
+  const [items, setItems] = useState([emptyItem()]);
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    localStorage.setItem("bk_supply_type", supplyType);
+    localStorage.setItem("bk_doc_type", docType);
+    localStorage.setItem("bk_inv_prefix", invoicePrefix);
+    localStorage.setItem("bk_watermark", watermark);
+    localStorage.setItem("bk_seller_logo", sellerLogo);
+    localStorage.setItem("bk_seller_sig", sellerSignature);
+    localStorage.setItem("bk_show_qr", showUpiQr);
+  }, [supplyType, docType, invoicePrefix, watermark, sellerLogo, sellerSignature, showUpiQr]);
+
+  // Smart GST Logic
+  useEffect(() => {
+    const sState = seller.state?.trim().toLowerCase();
+    const bState = buyer.state?.trim().toLowerCase();
+    if (sState && bState) setSupplyType(sState === bState ? "intra" : "inter");
+  }, [seller.state, buyer.state]);
+
+  const calcItem = (item) => {
+    const qty = parseFloat(item.qty) || 0;
+    const rate = parseFloat(item.rate) || 0;
+    const disc = parseFloat(item.discount) || 0;
+    const taxable = (qty * rate) * (1 - disc / 100);
+    const gstAmt = taxable * (item.gstRate / 100);
+    return { taxable, gstAmt, total: taxable + gstAmt };
+  };
+
+  const totals = items.reduce((acc, item) => {
+    const c = calcItem(item);
+    acc.taxable += c.taxable; acc.gst += c.gstAmt; acc.total += c.total;
+    return acc;
+  }, { taxable: 0, gst: 0, total: 0 });
+
+  const updateItem = (id, field, val) => setItems(items.map(i => i.id === id ? { ...i, [field]: val } : i));
+  const addItem = () => setItems([...items, emptyItem()]);
+  const removeItem = (id) => items.length > 1 && setItems(items.filter(i => i.id !== id));
+
+  const validate = () => {
+    const e = {};
+    if (!seller.name) e.sellerName = true;
+    if (!buyer.name) e.buyerName = true;
+    if (items.some(i => !i.desc || !i.rate)) e.items = true;
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const resetForm = () => {
+    setInvoiceNum(invoiceNo()); setInvoiceDate(today()); setDueDate(""); setPaidStatus("unpaid");
+    setBuyer({ name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", email: "", phone: "" });
+    setItems([emptyItem()]); setErrors({});
+  };
+
+  const handleSaveSeller = () => { saveJSON("bk_seller", seller); setSavedSeller(seller); alert("✅ Profile saved!"); };
+  const handleSaveClient = () => {
+    if (!buyer.name) return alert("Enter client name");
+    const updated = [...savedClients.filter(c => c.name !== buyer.name), buyer];
+    setSavedClients(updated); saveJSON("bk_clients", updated); alert(`✅ Client saved!`);
+  };
+  const handleLoadClient = (name) => { const c = savedClients.find(cl => cl.name === name); if (c) setBuyer(c); };
+  const handleDeleteClient = (name) => { const updated = savedClients.filter(c => c.name !== name); setSavedClients(updated); saveJSON("bk_clients", updated); };
+
+  return {
+    invoiceNum, setInvoiceNum, invoiceDate, setInvoiceDate, dueDate, setDueDate,
+    supplyType, setSupplyType, docType, setDocType, invoicePrefix, setInvoicePrefix,
+    watermark, setWatermark, notes, setNotes, paidStatus, setPaidStatus,
+    sellerLogo, setSellerLogo, sellerSignature, setSellerSignature,
+    seller, setSeller, buyer, setBuyer, items, setItems, errors, setErrors,
+    savedSeller, setSavedSeller, savedClients, setSavedClients,
+    calcItem, totals, updateItem, addItem, removeItem, validate, resetForm,
+    handleSaveSeller, handleSaveClient, handleLoadClient, handleDeleteClient,
+    showUpiQr, setShowUpiQr,
+    trackInvoiceEvent, getInvoiceStatus, INVOICE_STATUSES
+  };
+}

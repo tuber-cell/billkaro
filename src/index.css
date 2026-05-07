@@ -101,12 +101,25 @@ input, textarea, select {
 
   /* Header: wrap on small screens */
   .bk-header {
-    flex-wrap: wrap !important;
+    flex-direction: column !important;
     padding: 12px 16px !important;
-    gap: 10px !important;
+    gap: 16px !important;
+    height: auto !important;
   }
   .bk-header-logo {
     font-size: 20px !important;
+  }
+  
+  .header-nav {
+    width: 100% !important;
+    justify-content: center !important;
+    order: 3;
+  }
+
+  .header-user-info {
+    width: 100% !important;
+    justify-content: space-between !important;
+    order: 2;
   }
 
   /* Form container */
@@ -118,6 +131,39 @@ input, textarea, select {
   .bk-card {
     padding: 20px 16px !important;
     border-radius: 12px !important;
+  }
+
+  /* Stats Grid on Mobile */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Tables to Cards on Mobile */
+  .mobile-table-to-cards thead {
+    display: none;
+  }
+  .mobile-table-to-cards tr {
+    display: block;
+    background: rgba(255,255,255,0.03);
+    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-table-to-cards td {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0 !important;
+    border: none !important;
+    text-align: left !important;
+  }
+  .mobile-table-to-cards td::before {
+    content: attr(data-label);
+    color: #8899aa;
+    font-weight: 500;
+    font-size: 11px;
+    text-transform: uppercase;
   }
 
   /* Print-actions toolbar wrapping on mobile */
@@ -158,11 +204,62 @@ input, textarea, select {
   .invoice-wrap {
     margin: 70px 8px 20px !important;
   }
+
+  .bk-auth-modal {
+    width: 95% !important;
+    padding: 24px 20px !important;
+    max-width: 440px !important;
+  }
+
+  .grid-responsive-bank {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .pending-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .pending-amount {
+    text-align: left !important;
+    width: 100% !important;
+    border-top: 1px solid rgba(255,255,255,0.05) !important;
+    padding-top: 12px !important;
+  }
+
+  .pending-actions {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .pending-actions button {
+    flex: 1 !important;
+    padding: 10px 4px !important;
+  }
 }
 
 @media (max-width: 480px) {
   .grid-responsive-3 {
     grid-template-columns: 1fr !important;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  h2 {
+    font-size: 24px !important;
+  }
+  
+  .bk-flex-column-mobile {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .bk-flex-column-mobile > div {
+    width: 100% !important;
   }
 }
 
