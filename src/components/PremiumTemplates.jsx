@@ -111,6 +111,99 @@ export const ExecutivePro = ({ data }) => (
   </div>
 );
 
+// 3. STANDARD CLEAN (The Classic / Familiar)
+export const StandardClean = ({ data }) => (
+  <div style={{ background: "white", minHeight: "29.7cm", width: "21cm", fontFamily: "'Inter', sans-serif", overflow: "hidden", position: "relative", color: "#1e293b", padding: 0 }}>
+    <div style={{ background: "linear-gradient(135deg, #0f1923 0%, #1a3a5c 100%)", padding: "40px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div>
+        {data.sellerLogo && <img src={data.sellerLogo} alt="Logo" style={{ height: 60, maxWidth: 200, objectFit: "contain", marginBottom: 15 }} />}
+        <div style={{ fontSize: 24, fontWeight: 800, color: "#d4af37", textTransform: "uppercase" }}>{data.docType}</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>#{data.invoicePrefix}{data.invoiceNum}</div>
+      </div>
+      <div style={{ textAlign: "right" }}>
+        <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 5 }}>{data.seller.name || "Your Business"}</div>
+        <div style={{ fontSize: 12, color: "#d4af37", fontWeight: 700 }}>GSTIN: {data.seller.gstin || "N/A"}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 5, maxWidth: 250, marginLeft: "auto" }}>{data.seller.address}</div>
+      </div>
+    </div>
+
+    <div style={{ padding: "30px 50px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50, marginBottom: 40 }}>
+        <div>
+          <div style={T_S.label}>Billed To</div>
+          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 5 }}>{data.buyer.name}</div>
+          <div style={T_S.address}>{data.buyer.address}</div>
+          {data.buyer.gstin && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 10 }}>GSTIN: {data.buyer.gstin}</div>}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div><div style={T_S.label}>Date</div><div style={{ fontSize: 13, fontWeight: 700 }}>{data.invoiceDate}</div></div>
+          <div><div style={T_S.label}>Due Date</div><div style={{ fontSize: 13, fontWeight: 700 }}>{data.dueDate || "On Receipt"}</div></div>
+        </div>
+      </div>
+
+      <table style={{ ...T_S.table, marginTop: 0 }}>
+        <thead>
+          <tr style={{ background: "#f8fafc" }}>
+            <th style={{ ...T_S.th, padding: "12px" }}>Description</th>
+            <th style={{ ...T_S.th, textAlign: "right", width: 80 }}>Qty</th>
+            <th style={{ ...T_S.th, textAlign: "right", width: 100 }}>Rate</th>
+            <th style={{ ...T_S.th, textAlign: "right", width: 120 }}>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.items.map((item, i) => (
+            <tr key={i}>
+              <td style={{ ...T_S.td, padding: "12px" }}>
+                <div style={{ fontWeight: 700 }}>{item.desc}</div>
+                {item.hsn && <div style={{ fontSize: 10, color: "#94a3b8" }}>HSN: {item.hsn}</div>}
+              </td>
+              <td style={{ ...T_S.td, textAlign: "right" }}>{item.qty}</td>
+              <td style={{ ...T_S.td, textAlign: "right" }}>{fmt(item.rate)}</td>
+              <td style={{ ...T_S.td, textAlign: "right", fontWeight: 700 }}>{fmt(item.qty * item.rate)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 30 }}>
+        <UPI_QR seller={data.seller} total={data.totals.total} />
+        <div style={{ width: 280 }}>
+          <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>Subtotal</span><span>{fmt(data.totals.subtotal)}</span></div>
+          <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>Tax (GST)</span><span>{fmt(data.totals.tax)}</span></div>
+          <div style={{ ...T_S.totalRow, color: "#0f1923", borderTop: "2px solid #0f1923", paddingTop: 15, fontSize: 24 }}>
+            <span>Total</span><span>{fmt(data.totals.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 50, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 50, alignItems: "flex-end" }}>
+        <div>
+          <div style={T_S.label}>Bank Details</div>
+          <div style={{ fontSize: 11, color: "#475569", lineHeight: 1.6 }}>
+            <div>Bank: {data.seller.bankName}</div>
+            <div>A/C: {data.seller.accountNum}</div>
+            <div>IFSC: {data.seller.ifsc}</div>
+          </div>
+          {data.notes && (
+            <div style={{ marginTop: 20 }}>
+              <div style={T_S.label}>Notes</div>
+              <div style={{ fontSize: 11, color: "#94a3b8" }}>{data.notes}</div>
+            </div>
+          )}
+        </div>
+        <div style={{ textAlign: "right" }}>
+          {data.sellerSignature && <img src={data.sellerSignature} style={{ maxHeight: 50, marginBottom: 10 }} alt="sign" />}
+          <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: 10, fontSize: 11, fontWeight: 800 }}>AUTHORIZED SIGNATORY</div>
+        </div>
+      </div>
+    </div>
+    
+    <div style={{ position: "absolute", bottom: 40, left: 50, right: 50, textAlign: "center", fontSize: 10, color: "#94a3b8", borderTop: "1px solid #f1f5f9", paddingTop: 20 }}>
+      Generated via BillKaro · Secure GST Invoicing
+    </div>
+  </div>
+);
+
 // 2. MODERN MINIMAL (Sleek / Sophisticated)
 export const ModernMinimal = ({ data }) => (
   <div style={{ ...T_S.page, padding: "80px", color: "#000" }}>
@@ -183,6 +276,7 @@ const PremiumTemplates = ({ templateId, ...props }) => {
   const templates = {
     executive: ExecutivePro,
     minimal: ModernMinimal,
+    standard: StandardClean,
   };
 
   const Selected = templates[templateId] || ExecutivePro;

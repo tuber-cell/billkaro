@@ -145,7 +145,7 @@ const PreviewView = ({
 
         {isPro && (
             <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10 }}>
-                {["executive", "minimal"].map(id => (
+                {["executive", "minimal", "standard"].map(id => (
                     <button 
                         key={id} 
                         onClick={() => changeTemplate(id)}
@@ -240,235 +240,30 @@ const PreviewView = ({
         onPaste={(e) => e.preventDefault()}
         onDragStart={(e) => e.preventDefault()}
       >
-        {isPro ? (
-          <PremiumTemplates
-            templateId={templateId}
-            docType={docType} invoicePrefix={invoicePrefix} invoiceNum={invoiceNum}
-            invoiceDate={invoiceDate} dueDate={dueDate} supplyType={supplyType}
-            paidStatus={paidStatus} seller={seller} sellerLogo={sellerLogo}
-            sellerSignature={sellerSignature} buyer={buyer} items={items}
-            calcItem={calcItem} totals={totals} notes={notes} showUpiQr={showUpiQr}
-            getInvoiceStatus={getInvoiceStatus} INVOICE_STATUSES={INVOICE_STATUSES}
-          />
-        ) : (
-          <div style={{ background: "white", borderRadius: 4, boxShadow: "0 20px 80px rgba(0,0,0,0.4)", fontFamily: "'DM Sans', sans-serif", overflow: "hidden", position: "relative" }}>
-
-            {/* Smart Watermarking Logic */}
-            {(() => {
-              const isOverdue = paidStatus === "unpaid" && dueDate && new Date(dueDate) < new Date(today());
-              const activeWatermark = watermark || (isOverdue ? "OVERDUE" : (showWatermark ? "BILLKARO FREE" : ""));
-              
-              if (!activeWatermark) return null;
-
-              return (
-                <div className="watermark" style={{ 
-                  position: "absolute", 
-                  top: "50%", 
-                  left: "50%", 
-                  transform: "translate(-50%,-50%) rotate(-30deg)", 
-                  fontSize: (activeWatermark === "OVERDUE" || watermark) ? 120 : 64, 
-                  fontWeight: 900, 
-                  color: isOverdue && !watermark ? "rgba(239,68,68,0.08)" : "rgba(212,175,55,0.08)", 
-                  pointerEvents: "none", 
-                  whiteSpace: "nowrap", 
-                  zIndex: 0, 
-                  fontFamily: "'Playfair Display', serif",
-                  ...( (watermark || isOverdue) ? { border: `10px solid ${isOverdue && !watermark ? "rgba(239,68,68,0.08)" : "rgba(212,175,55,0.08)"}`, padding: "20px 60px", borderRadius: 30 } : {})
-                }}>
-                  {activeWatermark}
-                </div>
-              );
-            })()}
-
-            {/* Header */}
-            <div className="invoice-header" style={{ background: "linear-gradient(135deg, #0f1923 0%, #1a3a5c 100%)", padding: "24px 48px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {sellerLogo && <img src={sellerLogo} alt="Logo" style={{ height: 60, maxWidth: 200, objectFit: "contain", alignSelf: "flex-start", marginBottom: 8 }} />}
-                <div>
-                  <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 24, color: "#d4af37", marginBottom: 2, textTransform: "uppercase" }}>{docType}</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>#{invoicePrefix}{invoiceNum}</div>
-                  <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
-                    <div style={{ background: paidStatus === "paid" ? "rgba(34,197,94,0.2)" : "rgba(245,158,11,0.2)", border: `1px solid ${paidStatus === "paid" ? "#22c55e" : "#f59e0b"}`, color: paidStatus === "paid" ? "#22c55e" : "#f59e0b", padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
-                      {paidStatus === "paid" ? "✅ PAID" : "⏳ PENDING"}
-                    </div>
-                    {getInvoiceStatus && INVOICE_STATUSES && (
-                        (() => {
-                            const status = getInvoiceStatus(invoiceNum);
-                            const sInfo = INVOICE_STATUSES[paidStatus === "paid" ? "PAID" : status] || INVOICE_STATUSES.DRAFT;
-                            return (
-                                <span style={{ 
-                                    background: `${sInfo.color}15`, 
-                                    border: `1px solid ${sInfo.color}40`, 
-                                    color: sInfo.color, 
-                                    padding: "2px 10px", 
-                                    borderRadius: 20, 
-                                    fontSize: 11, 
-                                    fontWeight: 700
-                                }}>
-                                    {sInfo.icon} {sInfo.label}
-                                </span>
-                            );
-                        })()
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "white", marginBottom: 4, textTransform: "uppercase" }}>{seller.name || "Your Business"}</div>
-                {seller.gstin && <div style={{ fontSize: 12, color: "#d4af37" }}>GSTIN: {seller.gstin}</div>}
-                {seller.address && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 4 }}>{seller.address}</div>}
-                {seller.city && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{seller.city}, {seller.state} {seller.pin}</div>}
-                {seller.email && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{seller.email}</div>}
-                {seller.phone && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{seller.phone}</div>}
-              </div>
-            </div>
-
-            {/* Meta */}
-            <div className="invoice-meta" style={{ background: "#f8f9fa", padding: "12px 48px", display: "flex", justifyContent: "space-between", borderBottom: "2px solid #e9ecef" }}>
-              {[["Invoice Date", invoiceDate], ["Due Date", dueDate || "On Receipt"], ["Supply Type", supplyType === "intra" ? "Intra-State" : "Inter-State"]].map(([lbl, val]) => (
-                <div key={lbl}>
-                  <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{lbl}</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: "#1a2d45" }}>{val}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Billed by/to */}
-            <div className="invoice-billed-container" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", padding: "16px 48px", gap: 32, borderBottom: "1px solid #e9ecef" }}>
-              {[["Billed By", seller], ["Billed To", buyer]].map(([lbl, data]) => (
-                <div key={lbl}>
-                  <div style={{ fontSize: 9, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{lbl}</div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1a2d45", marginBottom: 2, textTransform: "capitalize" }}>{data.name || "—"}</div>
-                  {data.gstin && <div style={{ fontSize: 11, color: "#555" }}>GSTIN: {data.gstin}</div>}
-                  <div style={{ fontSize: 11, color: "#555", lineHeight: "1.2", textTransform: "capitalize" }}>
-                    {data.address && <span>{data.address}, </span>}
-                    {data.city && <span>{data.city}, {data.state} {data.pin}</span>}
-                  </div>
-                  {data.phone && <div style={{ fontSize: 11, color: "#555" }}>{data.phone}</div>}
-                </div>
-              ))}
-            </div>
-
-            {/* Items */}
-            <div style={{ padding: "0 48px 20px" }}>
-              <table className="invoice-items-table" style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
-                <thead>
-                  <tr style={{ background: "#0f1923" }}>
-                    {["#", "Description", "Qty", "Rate", "Disc %", "GST %", ...(supplyType === "intra" ? ["CGST", "SGST"] : ["IGST"]), "Total"].map(h => (
-                      <th key={h} style={{ padding: "10px 12px", color: "#d4af37", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em", textAlign: h === "Description" ? "left" : h === "#" ? "center" : "right" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, idx) => {
-                    const c = calcItem(item);
-                    return (
-                      <tr key={item.id} style={{ background: idx % 2 === 0 ? "white" : "#f8f9fa" }}>
-                        <td data-label="#" style={{ padding: "8px 12px", fontSize: 13, color: "#888", textAlign: "center" }}>{idx + 1}</td>
-                        <td data-label="Description" style={{ padding: "8px 12px", fontSize: 13, color: "#1a2d45", fontWeight: 700, textTransform: "capitalize" }}>{item.desc}</td>
-                        <td data-label="Qty" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>{item.qty}</td>
-                        <td data-label="Rate" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>₹{parseFloat(item.rate || 0).toLocaleString("en-IN")}</td>
-                        <td data-label="Disc %" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>{item.discount || 0}%</td>
-                        <td data-label="GST %" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>{item.gstRate}%</td>
-                        {supplyType === "intra" ? (
-                          <>
-                            <td data-label="CGST" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>₹{(c.gstAmt / 2).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
-                            <td data-label="SGST" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>₹{(c.gstAmt / 2).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
-                          </>
-                        ) : (
-                          <td data-label="IGST" style={{ padding: "8px 12px", fontSize: 13, color: "#333", textAlign: "right" }}>₹{c.gstAmt.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</td>
-                        )}
-                        <td data-label="Total" style={{ padding: "8px 12px", fontSize: 13, color: "#1a2d45", fontWeight: 700, textAlign: "right" }}>{fmt(c.total)}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
-                <div style={{ width: 240 }}>
-                  {[["Taxable Amount", fmt(totals.taxable)], ...(supplyType === "intra" ? [["CGST", fmt(totals.gst / 2)], ["SGST", fmt(totals.gst / 2)]] : [["IGST", fmt(totals.gst)]])].map(([lbl, val]) => (
-                    <div key={lbl} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: "1px solid #e9ecef" }}>
-                      <span style={{ color: "#555", fontSize: 12 }}>{lbl}</span>
-                      <span style={{ color: "#333", fontSize: 12 }}>{val}</span>
-                    </div>
-                  ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", background: "#0f1923", padding: "10px 14px", marginTop: 6, borderRadius: 4 }}>
-                    <span style={{ color: "#d4af37", fontWeight: 700, fontSize: 13 }}>TOTAL DUE</span>
-                    <span style={{ color: "#d4af37", fontWeight: 800, fontSize: 16 }}>{fmt(totals.total)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Payment & Signatory Section */}
-            <div className="invoice-footer-grid" style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", padding: "0 48px 24px", gap: 32, marginTop: 12, breakInside: "avoid" }}>
-              <div style={{ background: "#f8f9fa", padding: "16px", borderRadius: 8, border: "1px solid #e9ecef", display: "flex", gap: 16 }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 10, color: "#888", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12, fontWeight: 700 }}>Bank & Payment Details</div>
-                  <div style={{ display: "grid", gap: 6 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                      <span style={{ color: "#777" }}>Bank Name:</span>
-                      <span style={{ color: "#333", fontWeight: 600, textTransform: "uppercase" }}>{seller.bankName || "—"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                      <span style={{ color: "#777" }}>Account No:</span>
-                      <span style={{ color: "#333", fontWeight: 600 }}>{seller.accountNum || "—"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                      <span style={{ color: "#777" }}>IFSC Code:</span>
-                      <span style={{ color: "#333", fontWeight: 600 }}>{seller.ifsc || "—"}</span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginTop: 4, paddingTop: 4, borderTop: "1px dashed #ddd" }}>
-                      <span style={{ color: "#777" }}>UPI ID:</span>
-                      <span style={{ color: "#d4af37", fontWeight: 700 }}>{seller.upi || "—"}</span>
-                    </div>
-                  </div>
-                </div>
-                
-            {showUpiQr && seller.upi && (
-                <div style={{ textAlign: "center", borderLeft: "1px solid #eee", paddingLeft: 16, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ fontSize: 8, fontWeight: 800, color: "#1a3a5c", marginBottom: 4, textTransform: "uppercase" }}>Scan to Pay</div>
-                    <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`upi://pay?pa=${seller.upi}&pn=${encodeURIComponent(seller.name)}&am=${totals.total}&cu=INR`)}`}
-                        alt="Payment QR"
-                        style={{ width: 80, height: 80, border: "4px solid white", boxShadow: "0 2px 12px rgba(0,0,0,0.15)", borderRadius: 4 }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    <div style={{ fontSize: 9, color: "#1a3a5c", marginTop: 4, fontWeight: 700 }}>₹{totals.total.toLocaleString()}</div>
-                </div>
-            )}
-              </div>
-
-              <div className="invoice-sign-area" style={{ textAlign: "right", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div style={{ fontSize: 12, color: "#1a2d45", fontWeight: 800, textTransform: "uppercase", marginBottom: sellerSignature ? 4 : 45, letterSpacing: "0.03em" }}>
-                  For {seller.name || "Your Business"}
-                </div>
-                {sellerSignature && (
-                  <div style={{ height: 50, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-                    <img src={sellerSignature} alt="Signature" style={{ maxHeight: 50, maxWidth: 150, objectFit: "contain" }} />
-                  </div>
-                )}
-                <div>
-                  <div style={{ height: 1, background: "#1a2d45", width: "100%", marginBottom: 8 }}></div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#1a2d45" }}>Authorized Signatory</div>
-                  <div style={{ fontSize: 10, color: "#888", marginTop: 4 }}>This is a computer generated invoice</div>
-                </div>
-              </div>
-            </div>
-
-            {notes && (
-              <div style={{ padding: "10px 48px", background: "#f8f9fa", borderTop: "1px solid #e9ecef" }}>
-                <div style={{ fontSize: 10, color: "#888", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.08em" }}>Notes</div>
-                <div style={{ fontSize: 12, color: "#444", lineHeight: "1.3" }}>{notes}</div>
-              </div>
-            )}
-
-            <div style={{ background: "rgba(15, 25, 35, 0.03)", padding: "10px 48px", textAlign: "center", fontSize: 9, color: "#8899aa", borderTop: "1px solid #e9ecef", letterSpacing: "0.05em" }}>
-              Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>BillKaro</span> · Secure GST Compliant Digital Invoice
-            </div>
-          </div>
-        )}
+        <PremiumTemplates
+          templateId={isPro ? templateId : "standard"}
+          docType={docType}
+          invoicePrefix={invoicePrefix}
+          invoiceNum={invoiceNum}
+          invoiceDate={invoiceDate}
+          dueDate={dueDate}
+          supplyType={supplyType}
+          paidStatus={paidStatus}
+          seller={seller}
+          sellerLogo={sellerLogo}
+          sellerSignature={sellerSignature}
+          buyer={buyer}
+          items={items}
+          calcItem={calcItem}
+          totals={totals}
+          notes={notes}
+          showUpiQr={showUpiQr}
+          getInvoiceStatus={getInvoiceStatus}
+          INVOICE_STATUSES={INVOICE_STATUSES}
+        />
+        <div style={{ background: "rgba(15, 25, 35, 0.03)", padding: "10px 48px", textAlign: "center", fontSize: 9, color: "#8899aa", borderTop: "1px solid #e9ecef", letterSpacing: "0.05em" }}>
+          Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>BillKaro</span> · Secure GST Compliant Digital Invoice
+        </div>
       </div>
 
       {/* E-Way Bill Helper Modal */}
