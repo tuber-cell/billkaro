@@ -12,16 +12,20 @@ export const INVOICE_STATUSES = {
 };
 
 export const trackInvoiceEvent = (invoiceNum, event) => {
-    const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
-    if (!tracking[invoiceNum]) {
-        tracking[invoiceNum] = { events: [], status: "DRAFT" };
+    try {
+        const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+        if (!tracking[invoiceNum]) {
+            tracking[invoiceNum] = { events: [], status: "DRAFT" };
+        }
+        tracking[invoiceNum].events.push({
+            event,
+            timestamp: new Date().toISOString()
+        });
+        tracking[invoiceNum].status = event;
+        localStorage.setItem("bk_invoice_tracking", JSON.stringify(tracking));
+    } catch (err) {
+        console.warn("Failed to track invoice event:", err);
     }
-    tracking[invoiceNum].events.push({
-        event,
-        timestamp: new Date().toISOString()
-    });
-    tracking[invoiceNum].status = event;
-    localStorage.setItem("bk_invoice_tracking", JSON.stringify(tracking));
 };
 
 export const getInvoiceStatus = (invoiceNum) => {
@@ -96,9 +100,17 @@ export function useInvoiceForm() {
 
   const validate = () => {
     const e = {};
-    if (!seller.name) e.sellerName = true;
-    if (!buyer.name) e.buyerName = true;
-    if (items.some(i => !i.desc || !i.rate)) e.items = true;
+    if (!seller.name?.trim()) e.sellerName = true;
+    if (!buyer.name?.trim()) e.buyerName = true;
+    
+    // Only validate items that aren't completely empty
+    const activeItems = items.filter(i => i.desc?.trim() || i.rate);
+    if (activeItems.length === 0) {
+      e.items = true;
+    } else if (activeItems.some(i => !i.desc?.trim() || !i.rate)) {
+      e.items = true;
+    }
+    
     setErrors(e);
     return Object.keys(e).length === 0;
   };

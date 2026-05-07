@@ -136,29 +136,52 @@ export default function App() {
 
 
   const handlePreview = async () => {
-    if (!validate()) {
-      alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
-      return;
+    try {
+      if (!validate()) {
+        alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
+        return;
+      }
+      const activeItems = items.filter(i => i.desc?.trim() || i.rate);
+      const snapshot = { invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes, seller, buyer, items: activeItems, createdAt: new Date().toISOString() };
+      
+      if (user) {
+        await setDoc(doc(db, "users", user.uid, "invoices", invoiceNum), snapshot);
+      } else {
+        saveToLocalArchive(snapshot);
+      }
+      
+      saveToHistory(snapshot);
+      trackInvoiceEvent(invoiceNum, "VIEWED");
+      setStep("preview");
+    } catch (err) {
+      console.error("Failed to preview/save invoice:", err);
+      alert("❌ Failed to save invoice. Please check your internet connection or try again.");
     }
-    const snapshot = { invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes, seller, buyer, items, createdAt: new Date().toISOString() };
-    if (user) await setDoc(doc(db, "users", user.uid, "invoices", invoiceNum), snapshot);
-    else saveToLocalArchive(snapshot);
-    saveToHistory(snapshot);
-    trackInvoiceEvent(invoiceNum, "VIEWED");
-    setStep("preview");
   };
 
   const handleSaveAndNext = async () => {
-    if (!validate()) {
-        alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
-        return;
+    try {
+      if (!validate()) {
+          alert("⚠️ Please fill: Seller Business Name, Buyer Business Name, and at least one Item with Description & Rate.");
+          return;
+      }
+      const activeItems = items.filter(i => i.desc?.trim() || i.rate);
+      const snapshot = { invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes, seller, buyer, items: activeItems, createdAt: new Date().toISOString() };
+      
+      if (user) {
+        await setDoc(doc(db, "users", user.uid, "invoices", invoiceNum), snapshot);
+      } else {
+        saveToLocalArchive(snapshot);
+      }
+      
+      saveToHistory(snapshot);
+      resetForm();
+      setSaveToast(true); 
+      setTimeout(() => setSaveToast(false), 3000);
+    } catch (err) {
+      console.error("Failed to save invoice:", err);
+      alert("❌ Failed to save invoice. Please check your internet connection or try again.");
     }
-    const snapshot = { invoiceNum, invoiceDate, dueDate, supplyType, paidStatus, notes, seller, buyer, items, createdAt: new Date().toISOString() };
-    if (user) await setDoc(doc(db, "users", user.uid, "invoices", invoiceNum), snapshot);
-    else saveToLocalArchive(snapshot);
-    saveToHistory(snapshot);
-    resetForm();
-    setSaveToast(true); setTimeout(() => setSaveToast(false), 3000);
   };
 
   const handleWhatsApp = () => {
