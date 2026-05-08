@@ -26,136 +26,105 @@ const UPI_QR = ({ seller, total }) => {
 };
 
 // 1. EXECUTIVE PRO (Tech Professional - SaaS Style)
+// 1. EXECUTIVE PRO (Wavy Blue Gradient Design)
 export const ExecutivePro = ({ data }) => {
-  const accent = "#4f46e5"; // Indigo Tech Accent
-  const dark = "#0f172a"; // Deep Slate
-  const light = "#64748b"; // Slate Grey
+  const accent = "#003580"; // Deep Blue
+  const gradient = "linear-gradient(90deg, #001f4d 0%, #0047b3 100%)";
+  const lightGray = "#f3f4f6";
+  const borderGray = "#d1d5db";
 
   return (
-    <div style={{ padding: "60px", minHeight: "29.7cm", width: "21cm", background: "#fff", boxSizing: "border-box", color: dark, fontFamily: "'DM Sans', sans-serif", position: "relative" }}>
-      {/* Top Accent Bar */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "6px", background: accent }}></div>
-
-      {/* Header Section */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 60, alignItems: "flex-start" }}>
-        <div>
-          {data.sellerLogo ? (
-            <div style={{ width: 80, height: 80, borderRadius: "16px", overflow: "hidden", background: "#f8fafc", border: "1px solid #e2e8f0", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-              <img src={data.sellerLogo} style={{ width: "85%", height: "85%", objectFit: "contain" }} alt="logo" />
-            </div>
-          ) : (
-            <div style={{ width: 60, height: 60, borderRadius: "12px", background: dark, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 900, marginBottom: 20 }}>
-              {data.seller.name.charAt(0)}
-            </div>
-          )}
-          <div style={{ fontSize: 24, fontWeight: 800, color: dark, letterSpacing: "-0.5px", marginBottom: 6 }}>{data.seller.name}</div>
-          <div style={{ fontSize: 13, color: light, lineHeight: "1.6", whiteSpace: "pre-line", maxWidth: 300 }}>{data.seller.address}</div>
-          {data.seller.gstin && (
-            <div style={{ display: "inline-block", marginTop: 12, padding: "4px 10px", background: "#f1f5f9", borderRadius: "6px", fontSize: 11, fontWeight: 700, color: light }}>
-              GSTIN: {data.seller.gstin}
-            </div>
-          )}
+    <div style={{ padding: 0, minHeight: "29.7cm", width: "21cm", background: "#fff", boxSizing: "border-box", color: "#1f2937", fontFamily: "'Inter', sans-serif", position: "relative", overflow: "hidden" }}>
+      {/* Wavy Header */}
+      <div style={{ position: "relative", height: "240px", background: gradient, padding: "60px", color: "#fff" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <h1 style={{ fontSize: "64px", fontWeight: "900", margin: 0, letterSpacing: "2px" }}>INVOICE</h1>
+          <div style={{ fontSize: "18px", fontWeight: "700", marginTop: "10px" }}>NO: {data.invoicePrefix}{data.invoiceNum}</div>
         </div>
-
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 56, fontWeight: 900, color: dark, letterSpacing: "-2px", lineHeight: 1 }}>INVOICE</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: light, marginTop: 8 }}>No. {data.invoicePrefix}{data.invoiceNum}</div>
-          
-          <div style={{ marginTop: 40, padding: "20px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
-            <div style={{ fontSize: 11, color: light, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Balance Due</div>
-            <div style={{ fontSize: 28, fontWeight: 900, color: accent }}>{fmt(data.totals.total)}</div>
-          </div>
-        </div>
+        
+        {/* Wavy Shape Overlay */}
+        <svg viewBox="0 0 500 150" preserveAspectRatio="none" style={{ position: "absolute", bottom: -2, left: 0, width: "100%", height: "100px" }}>
+          <path d="M0.00,49.98 C149.99,150.00 349.89,-49.98 500.00,49.98 L500.00,150.00 L0.00,150.00 Z" style={{ stroke: "none", fill: "#fff" }}></path>
+        </svg>
       </div>
 
-      {/* Info Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 40, marginBottom: 60, padding: "30px 0", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}>
-        <div>
-          <div style={{ fontSize: 10, color: light, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>Billed To</div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: dark, marginBottom: 6 }}>{data.buyer.name}</div>
-          <div style={{ fontSize: 13, color: light, lineHeight: "1.5", whiteSpace: "pre-line" }}>{data.buyer.address}</div>
-        </div>
-        <div>
-          <div style={{ fontSize: 10, color: light, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>Ship To</div>
-          <div style={{ fontSize: 13, color: light, lineHeight: "1.5", whiteSpace: "pre-line" }}>{data.shippingAddress || data.buyer.address}</div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ marginBottom: 15 }}>
-            <div style={{ fontSize: 10, color: light, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Invoice Date</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: dark }}>{data.invoiceDate}</div>
+      <div style={{ padding: "0 60px 60px 60px" }}>
+        {/* Contact Info */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "40px" }}>
+          <div style={{ width: "300px" }}>
+            <div style={{ fontSize: "18px", fontWeight: "800", marginBottom: "10px", color: "#374151" }}>Bill To:</div>
+            <div style={{ fontSize: "15px", fontWeight: "600", marginBottom: "4px" }}>{data.buyer.name}</div>
+            <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.5", whiteSpace: "pre-line" }}>{data.buyer.address}</div>
           </div>
-          <div>
-            <div style={{ fontSize: 10, color: light, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 4 }}>Due Date</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: dark }}>{data.dueDate || "Due on Receipt"}</div>
+          <div style={{ width: "300px", textAlign: "right" }}>
+            <div style={{ fontSize: "18px", fontWeight: "800", marginBottom: "10px", color: "#374151" }}>From:</div>
+            <div style={{ fontSize: "15px", fontWeight: "600", marginBottom: "4px" }}>{data.seller.name}</div>
+            <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.5", whiteSpace: "pre-line" }}>{data.seller.address}</div>
           </div>
         </div>
-      </div>
 
-      {/* Table Section */}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "2px solid #0f172a" }}>
-            <th style={{ padding: "12px 10px", textAlign: "left", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: dark }}>#</th>
-            <th style={{ padding: "12px 10px", textAlign: "left", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: dark }}>Items & Description</th>
-            <th style={{ padding: "12px 10px", textAlign: "right", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: dark, width: 80 }}>Qty</th>
-            <th style={{ padding: "12px 10px", textAlign: "right", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: dark, width: 120 }}>Rate</th>
-            <th style={{ padding: "12px 10px", textAlign: "right", fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: dark, width: 140 }}>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.items.map((item, i) => (
-            <tr key={i} style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <td style={{ padding: "20px 10px", fontSize: 13, color: light }}>{i + 1}</td>
-              <td style={{ padding: "20px 10px" }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: dark, marginBottom: 4 }}>{item.desc}</div>
-                {item.hsn && <div style={{ fontSize: 11, color: light }}>HSN: {item.hsn}</div>}
-              </td>
-              <td style={{ padding: "20px 10px", textAlign: "right", fontSize: 14, color: dark }}>{item.qty}</td>
-              <td style={{ padding: "20px 10px", textAlign: "right", fontSize: 14, color: dark }}>{fmt(item.rate)}</td>
-              <td style={{ padding: "20px 10px", textAlign: "right", fontSize: 14, fontWeight: 800, color: dark }}>{fmt(item.qty * item.rate)}</td>
+        {/* Date Section */}
+        <div style={{ marginBottom: "40px", fontSize: "16px", fontWeight: "600", color: "#4b5563" }}>
+          Date: {data.invoiceDate}
+        </div>
+
+        {/* Table Section */}
+        <table style={{ width: "100%", borderCollapse: "collapse", border: `1px solid ${borderGray}`, marginBottom: "20px" }}>
+          <thead>
+            <tr style={{ background: accent, color: "#fff" }}>
+              <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", fontWeight: "700", border: `1px solid ${borderGray}` }}>Description</th>
+              <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: "700", border: `1px solid ${borderGray}`, width: "80px" }}>Qty</th>
+              <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: "700", border: `1px solid ${borderGray}`, width: "120px" }}>Price</th>
+              <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", fontWeight: "700", border: `1px solid ${borderGray}`, width: "120px" }}>Total</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.items.map((item, i) => (
+              <tr key={i}>
+                <td style={{ padding: "12px", fontSize: "13px", border: `1px solid ${borderGray}`, color: "#4b5563" }}>{item.desc}</td>
+                <td style={{ padding: "12px", textAlign: "center", fontSize: "13px", border: `1px solid ${borderGray}`, color: "#4b5563" }}>{item.qty}</td>
+                <td style={{ padding: "12px", textAlign: "center", fontSize: "13px", border: `1px solid ${borderGray}`, color: "#4b5563" }}>{fmt(item.rate)}</td>
+                <td style={{ padding: "12px", textAlign: "center", fontSize: "13px", border: `1px solid ${borderGray}`, color: "#4b5563" }}>{fmt(item.qty * item.rate)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* Summary Section */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 40, alignItems: "flex-start" }}>
-        <div style={{ flex: 1 }}>
-           <UPI_QR seller={data.seller} total={data.totals.total} />
-        </div>
-        <div style={{ width: 280 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
-            <span style={{ fontSize: 13, color: light }}>Subtotal</span>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>{fmt(data.totals.subtotal)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f1f5f9" }}>
-            <span style={{ fontSize: 13, color: light }}>Tax ({data.taxRate || 0}%)</span>
-            <span style={{ fontSize: 13, fontWeight: 700 }}>{fmt(data.totals.tax)}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", padding: "25px 0", alignItems: "center" }}>
-            <span style={{ fontSize: 18, fontWeight: 900, color: dark }}>Total Amount</span>
-            <span style={{ fontSize: 24, fontWeight: 900, color: accent }}>{fmt(data.totals.total)}</span>
-          </div>
-          
-          <div style={{ background: dark, padding: "16px", borderRadius: "12px", textAlign: "center", color: "#fff" }}>
-             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: 1, opacity: 0.7, marginBottom: 4 }}>Amount Due</div>
-             <div style={{ fontSize: 20, fontWeight: 900 }}>{fmt(data.totals.total)}</div>
+        {/* Subtotal Bar */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "60px" }}>
+          <div style={{ display: "flex", width: "320px", background: accent, color: "#fff", borderRadius: "2px", overflow: "hidden" }}>
+            <div style={{ flex: 1, padding: "12px 20px", fontSize: "14px", fontWeight: "700", borderRight: "1px solid rgba(255,255,255,0.2)" }}>Sub Total</div>
+            <div style={{ padding: "12px 20px", fontSize: "14px", fontWeight: "700", textAlign: "right" }}>{fmt(data.totals.total)}</div>
           </div>
         </div>
-      </div>
 
-      {/* Footer Notes */}
-      <div style={{ marginTop: 80, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 60, alignItems: "flex-end" }}>
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12, color: dark }}>Notes & Terms</div>
-          <div style={{ fontSize: 12, color: light, lineHeight: "1.6" }}>
-            {data.notes || "Please pay by the due date. Thank you for choosing us."}
+        {/* Footer Grid */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div style={{ width: "350px" }}>
+            <div style={{ marginBottom: "30px" }}>
+              <div style={{ fontSize: "14px", fontWeight: "800", marginBottom: "8px", color: "#374151" }}>Note:</div>
+              <div style={{ width: "100%", height: "1px", background: borderGray, marginBottom: "12px" }}></div>
+              <div style={{ width: "100%", height: "1px", background: borderGray, marginBottom: "12px" }}></div>
+              <div style={{ width: "100%", height: "1px", background: borderGray }}></div>
+              <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "10px", lineHeight: "1.5" }}>{data.notes}</div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: "14px", fontWeight: "800", marginBottom: "12px", color: "#374151" }}>Payment Information:</div>
+              <div style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: "8px", fontSize: "13px" }}>
+                <span style={{ fontWeight: "800" }}>Bank:</span>
+                <span>{data.bankDetails?.bankName || "HDFC Bank"}</span>
+                <span style={{ fontWeight: "800" }}>A/c No:</span>
+                <span>{data.bankDetails?.accountNum || "Not Provided"}</span>
+                <span style={{ fontWeight: "800" }}>IFSC:</span>
+                <span>{data.bankDetails?.ifsc || "Not Provided"}</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <div style={{ textAlign: "right" }}>
-          {data.sellerSignature && <img src={data.sellerSignature} style={{ maxHeight: 70, marginBottom: 15, mixBlendMode: "multiply" }} alt="signature" />}
-          <div style={{ fontSize: 12, fontWeight: 800, color: dark }}>Authorized Signatory</div>
-          <div style={{ fontSize: 11, color: light, marginTop: 4 }}>For {data.seller.name}</div>
+
+          <div style={{ textAlign: "center", marginTop: "40px" }}>
+            <div style={{ fontSize: "42px", fontWeight: "500", color: "#1f2937", fontFamily: "'Playfair Display', serif" }}>Thank You!</div>
+          </div>
         </div>
       </div>
     </div>
