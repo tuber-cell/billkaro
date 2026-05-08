@@ -25,91 +25,142 @@ const UPI_QR = ({ seller, total }) => {
   );
 };
 
-// 1. EXECUTIVE PRO (The Standard for Professionalism)
-export const ExecutivePro = ({ data }) => (
-  <div style={{ ...T_S.page, borderTop: "10px solid #1a3a5c" }}>
-    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 50 }}>
-      <div>
-        {data.sellerLogo ? (
-          <img src={data.sellerLogo} style={{ maxHeight: 70, maxWidth: 220, marginBottom: 15 }} alt="logo" />
-        ) : (
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#1a3a5c", margin: 0 }}>{data.seller.name}</h1>
-        )}
-        <div style={T_S.address}>{data.seller.address}</div>
-        <div style={{ fontSize: 11, fontWeight: 700, marginTop: 10 }}>GSTIN: {data.seller.gstin}</div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <h2 style={{ fontSize: 40, fontWeight: 200, color: "#1a3a5c", margin: "0 0 10px 0" }}>{data.docType.toUpperCase()}</h2>
-        <div style={{ display: "grid", gap: 5 }}>
-          <div><span style={T_S.label}>Invoice Number</span><div style={{ fontWeight: 700 }}>{data.invoicePrefix}{data.invoiceNum}</div></div>
-          <div><span style={T_S.label}>Date of Issue</span><div style={{ fontWeight: 700 }}>{data.invoiceDate}</div></div>
-          {data.dueDate && <div><span style={T_S.label}>Due Date</span><div style={{ fontWeight: 700, color: "#ef4444" }}>{data.dueDate}</div></div>}
+// 1. EXECUTIVE PRO (Modern Copper Design)
+export const ExecutivePro = ({ data }) => {
+  const accent = "#b34712"; // Deep Copper/Orange
+  const dark = "#1e293b";
+  const light = "#64748b";
+
+  return (
+    <div style={{ padding: "50px", minHeight: "29.7cm", width: "21cm", background: "#fff", boxSizing: "border-box", color: dark, fontFamily: "'Inter', sans-serif", position: "relative" }}>
+      {/* Header Section */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 30 }}>
+        <div>
+          {data.sellerLogo ? (
+            <div style={{ width: 120, height: 120, borderRadius: "50%", overflow: "hidden", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+              <img src={data.sellerLogo} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt="logo" />
+            </div>
+          ) : (
+            <div style={{ width: 100, height: 100, borderRadius: "50%", background: accent, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, fontWeight: 900, marginBottom: 20 }}>
+              {data.seller.name.charAt(0)}
+            </div>
+          )}
+          <div style={{ fontSize: 22, fontWeight: 800, color: accent, marginBottom: 4 }}>{data.seller.name}</div>
+          <div style={{ fontSize: 13, color: light, lineHeight: "1.5", whiteSpace: "pre-line" }}>{data.seller.address}</div>
+          {data.seller.gstin && <div style={{ fontSize: 12, fontWeight: 600, marginTop: 5 }}>GSTIN: {data.seller.gstin}</div>}
+        </div>
+
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 48, fontWeight: 300, color: accent, letterSpacing: 1 }}>INVOICE</div>
+          <div style={{ fontSize: 16, fontWeight: 700, marginTop: -5 }}># {data.invoicePrefix}{data.invoiceNum}</div>
+          
+          <div style={{ marginTop: 40 }}>
+            <div style={{ fontSize: 12, color: light, fontWeight: 600 }}>Balance Due</div>
+            <div style={{ fontSize: 32, fontWeight: 900, color: dark }}>{fmt(data.totals.total)}</div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div style={{ background: "#f8fafc", padding: 40, borderRadius: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 40, marginBottom: 40 }}>
-      <div>
-        <span style={T_S.label}>Billed To</span>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#1e293b", marginBottom: 8 }}>{data.buyer.name}</div>
-        <div style={T_S.address}>{data.buyer.address}</div>
-        {data.buyer.gstin && <div style={{ fontSize: 11, fontWeight: 700, marginTop: 10 }}>GSTIN: {data.buyer.gstin}</div>}
-      </div>
-      <div>
-        <span style={T_S.label}>Payment Details</span>
-        <div style={{ fontSize: 13, color: "#475569", lineHeight: 1.8 }}>
-          <div><span style={{ fontWeight: 600 }}>Bank:</span> {data.seller.bankName || "N/A"}</div>
-          <div><span style={{ fontWeight: 600 }}>A/C No:</span> {data.seller.accountNum || "N/A"}</div>
-          <div><span style={{ fontWeight: 600 }}>IFSC:</span> {data.seller.ifsc || "N/A"}</div>
+      {/* Bill To / Ship To / Date Section */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 40 }}>
+        <div style={{ display: "flex", gap: 60 }}>
+          <div>
+            <div style={{ fontSize: 12, color: dark, fontWeight: 700, marginBottom: 5 }}>Bill To</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: accent, marginBottom: 4 }}>{data.buyer.name}</div>
+            <div style={{ fontSize: 13, color: light, lineHeight: "1.4", whiteSpace: "pre-line", maxWidth: 200 }}>{data.buyer.address}</div>
+          </div>
+          {data.shippingAddress && (
+            <div>
+              <div style={{ fontSize: 12, color: dark, fontWeight: 700, marginBottom: 5 }}>Ship To</div>
+              <div style={{ fontSize: 13, color: light, lineHeight: "1.4", whiteSpace: "pre-line", maxWidth: 200 }}>{data.shippingAddress}</div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ textAlign: "right", display: "grid", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 15 }}>
+            <span style={{ fontSize: 13, color: dark, fontWeight: 700 }}>Invoice Date:</span>
+            <span style={{ fontSize: 13, color: dark }}>{data.invoiceDate}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 15 }}>
+            <span style={{ fontSize: 13, color: dark, fontWeight: 700 }}>Terms:</span>
+            <span style={{ fontSize: 13, color: dark }}>{data.dueDate ? "Due on Receipt" : "Net 15"}</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <table style={T_S.table}>
-      <thead>
-        <tr>
-          <th style={T_S.th}>Description</th>
-          <th style={{ ...T_S.th, textAlign: "right", width: 80 }}>Qty</th>
-          <th style={{ ...T_S.th, textAlign: "right", width: 120 }}>Rate</th>
-          <th style={{ ...T_S.th, textAlign: "right", width: 140 }}>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.items.map((item, i) => (
-          <tr key={i}>
-            <td style={T_S.td}>
-              <div style={{ fontWeight: 700, color: "#1e293b" }}>{item.desc}</div>
-              {item.hsn && <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4 }}>HSN: {item.hsn}</div>}
-            </td>
-            <td style={{ ...T_S.td, textAlign: "right" }}>{item.qty}</td>
-            <td style={{ ...T_S.td, textAlign: "right" }}>{fmt(item.rate)}</td>
-            <td style={{ ...T_S.td, textAlign: "right", fontWeight: 700 }}>{fmt(item.qty * item.rate)}</td>
+      {/* Table Section */}
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ background: accent }}>
+            <th style={{ padding: "12px 15px", textAlign: "left", color: "#fff", fontSize: 12, width: 40 }}>#</th>
+            <th style={{ padding: "12px 15px", textAlign: "left", color: "#fff", fontSize: 12 }}>Item & Description</th>
+            <th style={{ padding: "12px 15px", textAlign: "right", color: "#fff", fontSize: 12, width: 60 }}>Qty</th>
+            <th style={{ padding: "12px 15px", textAlign: "right", color: "#fff", fontSize: 12, width: 100 }}>Rate</th>
+            <th style={{ padding: "12px 15px", textAlign: "right", color: "#fff", fontSize: 12, width: 120 }}>Amount</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {data.items.map((item, i) => (
+            <tr key={i} style={{ borderBottom: "1px solid #e2e8f0" }}>
+              <td style={{ padding: "15px", fontSize: 13, color: light }}>{i + 1}</td>
+              <td style={{ padding: "15px" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: dark }}>{item.desc}</div>
+                {item.hsn && <div style={{ fontSize: 11, color: light, marginTop: 4 }}>{item.hsn}</div>}
+              </td>
+              <td style={{ padding: "15px", textAlign: "right", fontSize: 13, color: dark }}>{item.qty}</td>
+              <td style={{ padding: "15px", textAlign: "right", fontSize: 13, color: dark }}>{fmt(item.rate)}</td>
+              <td style={{ padding: "15px", textAlign: "right", fontSize: 13, fontWeight: 600, color: dark }}>{fmt(item.qty * item.rate)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 20 }}>
-      <UPI_QR seller={data.seller} total={data.totals.total} />
-      <div style={{ width: 320 }}>
-        <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>Subtotal</span><span style={{ fontWeight: 600 }}>{fmt(data.totals.subtotal)}</span></div>
-        <div style={T_S.summaryRow}><span style={{ color: "#64748b" }}>GST / Tax</span><span style={{ fontWeight: 600 }}>{fmt(data.totals.tax)}</span></div>
-        <div style={{ ...T_S.totalRow, color: "#1a3a5c" }}><span>Total Amount</span><span>{fmt(data.totals.total)}</span></div>
+      {/* Totals Section */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 30 }}>
+        <div style={{ width: 250 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
+            <span style={{ fontSize: 13, color: light }}>Sub Total</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{fmt(data.totals.subtotal)}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #f1f5f9" }}>
+            <span style={{ fontSize: 13, color: light }}>Tax Rate</span>
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{data.taxRate || "0"}%</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", padding: "15px 0", fontSize: 16, fontWeight: 900 }}>
+            <span>Total</span>
+            <span>{fmt(data.totals.total)}</span>
+          </div>
+
+          <div style={{ background: accent, padding: "15px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", color: "#fff", borderRadius: 4, marginTop: 10 }}>
+            <span style={{ fontWeight: 800, fontSize: 18 }}>Balance Due</span>
+            <span style={{ fontWeight: 900, fontSize: 20 }}>{fmt(data.totals.total)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Notes */}
+      <div style={{ marginTop: 60 }}>
+        {data.notes && (
+          <div style={{ marginBottom: 30 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Notes</div>
+            <div style={{ fontSize: 12, color: light, lineHeight: "1.6" }}>{data.notes}</div>
+          </div>
+        )}
+        <div style={{ marginBottom: 30 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>Terms & Conditions</div>
+          <div style={{ fontSize: 12, color: light, lineHeight: "1.6" }}>{data.terms || "All payments must be made in full before the commencement of any design work."}</div>
+        </div>
+        {data.sellerSignature && (
+          <div style={{ textAlign: "right" }}>
+            <img src={data.sellerSignature} style={{ maxHeight: 60, marginBottom: 10 }} alt="signature" />
+            <div style={{ fontSize: 11, fontWeight: 700, color: light, borderTop: "1px solid #e2e8f0", display: "inline-block", paddingTop: 5 }}>Authorized Signatory</div>
+          </div>
+        )}
       </div>
     </div>
-
-    <div style={T_S.footer}>
-      <div>
-        <div style={T_S.label}>Terms</div>
-        <div style={{ maxWidth: 400, fontSize: 11, color: "#94a3b8" }}>{data.notes || "Please pay within 15 days. Thank you for your business."}</div>
-      </div>
-      <div style={{ textAlign: "center", width: 200 }}>
-        {data.sellerSignature && <img src={data.sellerSignature} style={{ maxHeight: 60, marginBottom: 10 }} alt="sign" />}
-        <div style={{ borderTop: "1px solid #cbd5e1", paddingTop: 10, fontSize: 11, fontWeight: 700, color: "#64748b" }}>Authorized Signatory</div>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 // 3. STANDARD CLEAN (The BillKaro Classic - Pixel Perfect Version)
 export const StandardClean = ({ data }) => {
