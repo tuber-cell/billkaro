@@ -247,11 +247,12 @@ export const ModernMinimal = ({ data }) => {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "40px" }}>
           <div>
             <div style={{ fontSize: "15px", fontWeight: "800", color: accent, marginBottom: "12px" }}>Payment Info:</div>
-            <div style={{ fontSize: "13px", color: "#64748b", display: "grid", gap: "4px" }}>
+            <div style={{ fontSize: "13px", color: "#64748b", display: "grid", gap: "4px", marginBottom: "20px" }}>
               <div>Account: {data.seller.accountNum || "N/A"}</div>
               <div>A/C Name: {data.seller.name}</div>
               <div>Bank Details: {data.seller.bankName} {data.seller.ifsc}</div>
             </div>
+            {data.showUpiQr && <UPI_QR seller={data.seller} total={data.totals.total} />}
             
             <div style={{ marginTop: "30px", display: "grid", gap: "8px", fontSize: "12px", color: "#64748b" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
