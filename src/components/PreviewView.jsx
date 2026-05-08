@@ -145,7 +145,7 @@ const PreviewView = ({
 
         {isPro && (
             <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10 }}>
-                {["executive", "minimal", "standard"].map(id => (
+                {["executive", "minimal", "standard", "corporate"].map(id => (
                     <button 
                         key={id} 
                         onClick={() => changeTemplate(id)}
