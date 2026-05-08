@@ -156,16 +156,7 @@ export const ExecutivePro = ({ data }) => {
   );
 };
 
-const PremiumTemplates = ({ templateId, ...props }) => {
-  const templates = {
-    executive: ExecutivePro,
-    minimal: ModernMinimal,
-    corporate: CorporateGrid,
-  };
 
-  const Selected = templates[templateId] || ExecutivePro;
-  return <Selected data={props} />;
-};
 
 // 2. MODERN MINIMAL (Sleek Design Studio Style)
 export const ModernMinimal = ({ data }) => {
