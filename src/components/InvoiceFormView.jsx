@@ -320,7 +320,7 @@ const InvoiceFormView = ({
           <div style={S.secTitle}><span>📦</span> Items / Services</div>
           {errors.items && <div style={{ ...S.errText, marginBottom: 16, background: "rgba(239,68,68,0.1)", padding: "8px 12px", borderRadius: 8 }}>⚠️ Fill all item descriptions and rates</div>}
           <div className="scroll-container">
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(180px, 3fr) 90px 70px 100px 70px 80px 100px 40px", gap: 12, marginBottom: 12, minWidth: 750 }}>
+            <div className="items-grid-header" style={{ display: "grid", gridTemplateColumns: "minmax(180px, 3fr) 90px 70px 100px 70px 80px 100px 40px", gap: 12, marginBottom: 12, minWidth: 750 }}>
             {["Description", "HSN/SAC", "Qty", "Rate (₹)", "Disc %", "GST %", "Amount", ""].map(h => (
               <div key={h} style={{ ...S.label, marginBottom: 0, paddingBottom: 8, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>{h}</div>
             ))}
@@ -328,17 +328,27 @@ const InvoiceFormView = ({
           {(items || []).map((item, idx) => {
             const c = calcItem(item);
             return (
-              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "minmax(180px, 3fr) 90px 70px 100px 70px 80px 100px 40px", gap: 12, marginBottom: 12, alignItems: "center", minWidth: 750 }}>
+              <div key={item.id} className="item-row" style={{ display: "grid", gridTemplateColumns: "minmax(180px, 3fr) 90px 70px 100px 70px 80px 100px 40px", gap: 12, marginBottom: 12, alignItems: "center", minWidth: 750 }}>
                 <input style={S.input} placeholder={`Item ${idx + 1}`} value={item.desc} onChange={e => updateItem(item.id, "desc", e.target.value)} />
-                <input style={S.input} placeholder="HSN" value={item.hsn} onChange={e => updateItem(item.id, "hsn", e.target.value)} />
-                <input type="number" style={S.input} min="1" value={item.qty} onChange={e => updateItem(item.id, "qty", e.target.value)} />
-                <input type="number" style={S.input} placeholder="0.00" value={item.rate} onChange={e => updateItem(item.id, "rate", e.target.value)} />
-                <input type="number" style={S.input} placeholder="0" value={item.discount} onChange={e => updateItem(item.id, "discount", e.target.value)} />
-                <select style={S.select} value={item.gstRate} onChange={e => updateItem(item.id, "gstRate", Number(e.target.value))}>
-                  {(GST_RATES || []).map(r => <option key={r} value={r}>{r}%</option>)}
-                </select>
-                <div style={{ color: "#d4af37", fontSize: 13, fontWeight: 700, textAlign: "right", letterSpacing: "0.05em" }}>{fmt(c.total)}</div>
-                <button style={{ ...S.btnDanger, height: 40, width: 40, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px" }} onClick={() => removeItem(item.id)}>✕</button>
+                <div className="item-field-group" data-label="HSN/SAC">
+                  <input style={S.input} placeholder="HSN" value={item.hsn} onChange={e => updateItem(item.id, "hsn", e.target.value)} />
+                </div>
+                <div className="item-field-group" data-label="Qty">
+                  <input type="number" style={S.input} min="1" value={item.qty} onChange={e => updateItem(item.id, "qty", e.target.value)} />
+                </div>
+                <div className="item-field-group" data-label="Rate (₹)">
+                  <input type="number" style={S.input} placeholder="0.00" value={item.rate} onChange={e => updateItem(item.id, "rate", e.target.value)} />
+                </div>
+                <div className="item-field-group" data-label="Disc %">
+                  <input type="number" style={S.input} placeholder="0" value={item.discount} onChange={e => updateItem(item.id, "discount", e.target.value)} />
+                </div>
+                <div className="item-field-group" data-label="GST %">
+                  <select style={S.select} value={item.gstRate} onChange={e => updateItem(item.id, "gstRate", Number(e.target.value))}>
+                    {(GST_RATES || []).map(r => <option key={r} value={r}>{r}%</option>)}
+                  </select>
+                </div>
+                <div className="item-total-col" style={{ color: "#d4af37", fontSize: 13, fontWeight: 700, textAlign: "right", letterSpacing: "0.05em" }}>{fmt(c.total)}</div>
+                <button className="item-remove-btn" style={{ ...S.btnDanger, height: 40, width: 40, padding: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "10px" }} onClick={() => removeItem(item.id)}>✕</button>
               </div>
             );
           })}

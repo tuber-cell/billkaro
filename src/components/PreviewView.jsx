@@ -29,24 +29,50 @@ const PreviewView = ({
   }, [invoiceNum]);
 
   const currentStatus = getInvoiceStatus(invoiceNum);
+  const [scaleFactor, setScaleFactor] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      if (window.innerWidth < 820) {
+        // We want 800px width (reference) to fit in window.innerWidth - 32px (padding)
+        const targetWidth = window.innerWidth - 32;
+        const newScale = targetWidth / 800;
+        setScaleFactor(newScale);
+      } else {
+        setScaleFactor(1);
+      }
+    };
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
+
   const sInfo = INVOICE_STATUSES[currentStatus] || INVOICE_STATUSES.DRAFT;
   return (
-    <div>
+    <div style={{ background: "#0f1923", minHeight: "100vh" }}>
       <style>{`
         @media screen {
           .print-actions {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(15,25,35,0.92); backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(212,175,55,0.3);
-            padding: 12px 32px; display: flex; align-items: center; gap: 10px;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: #0f1923;
+            border-bottom: 1px solid rgba(212,175,55,0.4);
+            padding: 12px 24px; display: flex; align-items: center; gap: 12px;
             flex-wrap: wrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
           }
-          .invoice-wrap { max-width: 860px; margin: 80px auto 60px; padding: 0 20px; }
+          .invoice-wrap { max-width: 860px; margin: 90px auto 100px; padding: 0 16px; overflow-x: auto; }
         }
         @media (max-width: 768px) {
-          .print-actions { padding: 10px 12px; gap: 6px; position: absolute !important; }
-          .print-actions button { font-size: 11px !important; padding: 7px 10px !important; }
-          .invoice-wrap { margin: 120px 8px 20px !important; }
+          .print-actions { padding: 10px 12px; gap: 8px; }
+          .print-actions > div:first-child { font-size: 16px !important; margin-right: 8px !important; }
+          .print-actions button { font-size: 11px !important; padding: 8px 10px !important; }
+          .invoice-wrap { margin: 100px 4px 100px !important; padding: 0 4px !important; overflow: visible; }
+          
+          /* Auto-scale the invoice content to fit screen width */
+          .invoice-content-scale {
+            transform-origin: top center;
+            width: 800px !important; /* Fixed width for scaling reference */
+          }
           
           /* Invoice stacking */
           .invoice-header { flex-direction: column !important; align-items: center !important; padding: 24px 20px !important; text-align: center !important; }
@@ -77,6 +103,7 @@ const PreviewView = ({
             padding: 10mm 15mm !important; 
             width: 100% !important;
             max-width: none !important;
+            transform: none !important;
           }
           .invoice-wrap > div {
              box-shadow: none !important;
@@ -93,10 +120,10 @@ const PreviewView = ({
       <div className="print-actions">
         <div style={{ fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: 18, marginRight: 16 }}>⬡ Billby</div>
         
-        <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4, marginRight: "auto" }}>
-            <button style={{ background: step === "form" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "form" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} onClick={() => setStep("form")}>📝 Create</button>
-            <button style={{ background: step === "expenses" ? "rgba(20,184,166,0.15)" : "transparent", border: "none", color: step === "expenses" ? "#14b8a6" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} onClick={() => setStep("expenses")}>💸 Expenses</button>
-            <button style={{ background: step === "dashboard" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "dashboard" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} onClick={() => setStep("dashboard")}>📊 Insights</button>
+        <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4, marginRight: "auto", overflowX: "auto", maxWidth: "100%", scrollbarWidth: "none" }}>
+            <button style={{ background: step === "form" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "form" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} onClick={() => setStep("form")}>📝 Create</button>
+            <button style={{ background: step === "expenses" ? "rgba(20,184,166,0.15)" : "transparent", border: "none", color: step === "expenses" ? "#14b8a6" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} onClick={() => setStep("expenses")}>💸 Expenses</button>
+            <button style={{ background: step === "dashboard" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "dashboard" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} onClick={() => setStep("dashboard")}>📊 Insights</button>
         </div>
 
         {user ? (
@@ -119,7 +146,7 @@ const PreviewView = ({
                 🚀 UPGRADE
               </button>
             )}
-            <div style={{ textAlign: "right", lineHeight: 1 }}>
+            <div style={{ textAlign: "right", lineHeight: 1 }} className="desktop-only">
               <div style={{ color: "#e8edf2", fontSize: 11, fontWeight: 600 }}>{user.email || user.phoneNumber}</div>
               <div style={{ color: "#d4af37", fontSize: 9 }}>{dbPro ? (PLANS[plan]?.label || "Pro Account") : "Free Plan"}</div>
             </div>
@@ -144,7 +171,7 @@ const PreviewView = ({
         )}
 
         {isPro && (
-            <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10 }}>
+            <div style={{ display: "flex", gap: 6, marginRight: 10, background: "rgba(255,255,255,0.04)", padding: "4px 8px", borderRadius: 10, overflowX: "auto", maxWidth: "200px", scrollbarWidth: "none" }}>
                 {["executive", "minimal", "corporate"].map(id => (
                     <button 
                         key={id} 
@@ -158,7 +185,8 @@ const PreviewView = ({
                             fontSize: 10,
                             fontWeight: 700,
                             cursor: "pointer",
-                            textTransform: "capitalize"
+                            textTransform: "capitalize",
+                            whiteSpace: "nowrap"
                         }}
                     >
                         {id}
@@ -177,7 +205,7 @@ const PreviewView = ({
         }}>← Back</button>
 
         {/* Status Badge */}
-        <div style={{ 
+        <div className="desktop-only" style={{ 
           display: "flex", 
           alignItems: "center", 
           gap: 6, 
@@ -239,30 +267,33 @@ const PreviewView = ({
         onCut={(e) => e.preventDefault()}
         onPaste={(e) => e.preventDefault()}
         onDragStart={(e) => e.preventDefault()}
+        style={{ transform: scaleFactor < 1 ? `scale(${scaleFactor})` : "none" }}
       >
-        <PremiumTemplates
-          templateId={isPro ? templateId : "executive"}
-          docType={docType}
-          invoicePrefix={invoicePrefix}
-          invoiceNum={invoiceNum}
-          invoiceDate={invoiceDate}
-          dueDate={dueDate}
-          supplyType={supplyType}
-          paidStatus={paidStatus}
-          seller={seller}
-          sellerLogo={sellerLogo}
-          sellerSignature={sellerSignature}
-          buyer={buyer}
-          items={items}
-          calcItem={calcItem}
-          totals={totals}
-          notes={notes}
-          showUpiQr={showUpiQr}
-          getInvoiceStatus={getInvoiceStatus}
-          INVOICE_STATUSES={INVOICE_STATUSES}
-        />
-        <div style={{ background: "rgba(15, 25, 35, 0.03)", padding: "10px 48px", textAlign: "center", fontSize: 9, color: "#8899aa", borderTop: "1px solid #e9ecef", letterSpacing: "0.05em" }}>
-          Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>Billby</span> · Secure GST Compliant Digital Invoice
+        <div className="invoice-content-scale">
+          <PremiumTemplates
+            templateId={isPro ? templateId : "executive"}
+            docType={docType}
+            invoicePrefix={invoicePrefix}
+            invoiceNum={invoiceNum}
+            invoiceDate={invoiceDate}
+            dueDate={dueDate}
+            supplyType={supplyType}
+            paidStatus={paidStatus}
+            seller={seller}
+            sellerLogo={sellerLogo}
+            sellerSignature={sellerSignature}
+            buyer={buyer}
+            items={items}
+            calcItem={calcItem}
+            totals={totals}
+            notes={notes}
+            showUpiQr={showUpiQr}
+            getInvoiceStatus={getInvoiceStatus}
+            INVOICE_STATUSES={INVOICE_STATUSES}
+          />
+          <div style={{ background: "rgba(15, 25, 35, 0.03)", padding: "10px 48px", textAlign: "center", fontSize: 9, color: "#8899aa", borderTop: "1px solid #e9ecef", letterSpacing: "0.05em" }}>
+            Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>Billby</span> · Secure GST Compliant Digital Invoice
+          </div>
         </div>
       </div>
 

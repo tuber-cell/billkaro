@@ -9,10 +9,10 @@ const UpgradeView = ({
     <div style={S.page}>
       <Header step={step} setStep={setStep} user={user} dbPro={dbPro} plan={plan} handleLogout={handleLogout} setShowLogin={setShowLogin} />
       
-      <div style={{ maxWidth: 900, margin: "40px auto", padding: "0 20px" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <h2 style={{ color: "#e8edf2", fontSize: 32, marginBottom: 12 }}>Choose Your Plan</h2>
-          <p style={{ color: "#8899aa", fontSize: 16 }}>Scale your business with premium features</p>
+      <div style={{ maxWidth: 900, margin: "20px auto 40px", padding: "0 16px" }}>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <h2 style={{ color: "#e8edf2", fontSize: "calc(22px + 1vw)", marginBottom: 8 }}>Choose Your Plan</h2>
+          <p style={{ color: "#8899aa", fontSize: "calc(13px + 0.5vw)" }}>Scale your business with premium features</p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24 }}>

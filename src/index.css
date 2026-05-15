@@ -102,41 +102,53 @@ input, textarea, select {
   /* Header: wrap on small screens */
   .bk-header {
     flex-direction: column !important;
-    padding: 12px 16px !important;
-    gap: 16px !important;
+    padding: 16px !important;
+    gap: 20px !important;
     height: auto !important;
+    text-align: center;
   }
   .bk-header-logo {
-    font-size: 20px !important;
+    font-size: 22px !important;
+    margin-bottom: 4px;
   }
   
   .header-nav {
     width: 100% !important;
-    justify-content: center !important;
+    justify-content: space-around !important;
     order: 3;
+    padding: 10px 0;
+    border-top: 1px solid rgba(255,255,255,0.05);
   }
 
   .header-user-info {
     width: 100% !important;
-    justify-content: space-between !important;
+    justify-content: center !important;
+    flex-wrap: wrap;
+    gap: 12px;
     order: 2;
   }
 
   /* Form container */
   .bk-container {
-    padding: 20px 12px !important;
+    padding: 16px 12px !important;
   }
 
   /* Cards */
   .bk-card {
-    padding: 20px 16px !important;
-    border-radius: 12px !important;
+    padding: 24px 16px !important;
+    border-radius: 16px !important;
+    margin-bottom: 20px !important;
   }
 
   /* Stats Grid on Mobile */
   .stats-grid {
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: 1fr !important;
     gap: 12px !important;
+  }
+
+  /* Improved spacing for form groups */
+  .grid-responsive-3, .grid-responsive-2 {
+    gap: 16px !important;
   }
 
   /* Tables to Cards on Mobile */
@@ -182,22 +194,28 @@ input, textarea, select {
     display: flex !important;
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: rgba(15, 25, 35, 0.96);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(212,175,55,0.3);
-    padding: 12px 16px;
-    gap: 10px;
-    z-index: 200;
+    background: #0f1923;
+    border-top: 1px solid rgba(212,175,55,0.4);
+    padding: 12px 16px env(safe-area-inset-bottom);
+    gap: 12px;
+    z-index: 1000;
+    box-shadow: 0 -10px 25px rgba(0,0,0,0.5);
   }
   .mobile-action-bar button {
     flex: 1;
-    font-size: 13px !important;
-    padding: 12px 10px !important;
+    font-size: 14px !important;
+    padding: 14px 10px !important;
+    border-radius: 12px !important;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700 !important;
   }
 
   /* Give content enough bottom space so the bar doesn't cover it */
   .bk-form-bottom-pad {
-    padding-bottom: 90px;
+    padding-bottom: 100px !important;
   }
 
   /* Invoice preview on mobile */
@@ -237,6 +255,53 @@ input, textarea, select {
   .pending-actions button {
     flex: 1 !important;
     padding: 10px 4px !important;
+  }
+
+  /* Items List: Table to Cards */
+  .items-grid-header {
+    display: none !important;
+  }
+  .item-row {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    background: rgba(255,255,255,0.03);
+    padding: 16px !important;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 16px;
+    min-width: 0 !important;
+  }
+  .item-row > input:first-child {
+    grid-column: span 2;
+    font-weight: 700;
+    font-size: 14px !important;
+    background: rgba(212,175,55,0.05) !important;
+    border-color: rgba(212,175,55,0.2) !important;
+  }
+  .item-row > div.item-total-col {
+    grid-column: span 1;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .item-row > button.item-remove-btn {
+    grid-column: span 1;
+    width: 100% !important;
+    height: 40px !important;
+  }
+  
+  .item-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .item-field-group::before {
+    content: attr(data-label);
+    font-size: 10px;
+    color: #8899aa;
+    font-weight: 700;
+    text-transform: uppercase;
   }
 }
 

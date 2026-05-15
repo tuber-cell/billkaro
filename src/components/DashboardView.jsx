@@ -6,10 +6,10 @@ import { S, fmt } from "./common/Constants";
 import Header from "./common/Header";
 
 const StatCard = ({ title, value, icon, color }) => (
-  <div style={{ ...S.card, padding: 20, marginBottom: 0, borderLeft: `4px solid ${color}` }}>
+  <div style={{ ...S.card, padding: 20, marginBottom: 0, borderLeft: `4px solid ${color}` }} className="bk-card">
     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
       <span style={{ fontSize: 20 }}>{icon}</span>
-      <span style={{ color: "#8899aa", fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{title}</span>
+      <span style={{ color: "#8899aa", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{title}</span>
     </div>
     <div style={{ color: "#e8edf2", fontSize: 22, fontWeight: 800 }}>{value}</div>
   </div>
@@ -392,7 +392,7 @@ const DashboardView = ({
                             );
                           })()}
                         </td>
-                        <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <td data-label="Action" style={{ padding: "12px 16px", textAlign: "center" }}>
                             <button 
                               style={{ background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.2)", color: "#d4af37", padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}
                               onClick={() => handleViewInvoice(inv)}
