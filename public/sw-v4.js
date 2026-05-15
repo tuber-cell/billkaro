@@ -37,8 +37,11 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
     // Strategy: Network First for HTML/Navigation, Cache First for others
-    if (event.request.mode === "navigate" || 
-        (event.request.method === "GET" && event.request.headers.get("accept").includes("text/html"))) {
+    const isHtml = event.request.mode === "navigate" || 
+                 (event.request.method === "GET" && 
+                  event.request.headers.get("accept")?.includes("text/html"));
+
+    if (isHtml) {
         event.respondWith(
             fetch(event.request)
                 .then((response) => {
