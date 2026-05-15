@@ -37,7 +37,7 @@ class ErrorBoundary extends Component {
           <div style={{ background: "rgba(255,255,255,0.05)", padding: 20, borderRadius: 12, border: "1px solid rgba(239,68,68,0.2)", maxWidth: "600px", width: "100%", marginTop: 20 }}>
             <pre style={{ fontSize: 12, color: "#ef4444", whiteSpace: "pre-wrap", textAlign: "left", margin: 0 }}>{this.state.error?.toString()}</pre>
           </div>
-          <button style={{ marginTop: 32, background: "linear-gradient(135deg, #d4af37, #f0d060)", color: "#0f1923", border: "none", padding: "12px 32px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 14 }} onClick={() => window.location.reload()}>Reload BillKaro</button>
+          <button style={{ marginTop: 32, background: "linear-gradient(135deg, #d4af37, #f0d060)", color: "#0f1923", border: "none", padding: "12px 32px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 14 }} onClick={() => window.location.reload()}>Reload Billby</button>
         </div>
       );
     }
@@ -74,15 +74,38 @@ export default function App() {
   const { suggestion, warnings, saveToHistory, applySuggestion, clearBuyerHistory, hasHistory } = useHistoryLookup({ buyer, seller, items, supplyType, user });
   const { reconciling, reconciliationResults, reconciliationError, runReconciliation, exportReconciliationReport } = useGSTReconciliation();
 
+  useEffect(() => {
+    try {
+      // Rebranding Data Migration: bk_ -> bb_
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith("bk_")) {
+          const newKey = key.replace("bk_", "bb_");
+          if (!localStorage.getItem(newKey)) {
+            localStorage.setItem(newKey, localStorage.getItem(key));
+          }
+        }
+      });
+    } catch (err) {
+      console.warn("Migration failed:", err);
+    }
+  }, []);
+
   const [archiveCount, setArchiveCount] = useState(0);
   const [saveToast, setSaveToast] = useState(false);
-  const [expenses, setExpenses] = useState(() => JSON.parse(localStorage.getItem("bk_expenses") || "[]"));
+  const [expenses, setExpenses] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("bb_expenses") || "[]");
+    } catch {
+      return [];
+    }
+  });
   const [expenseForm, setExpenseForm] = useState({ category: "Stock Purchase", amount: "", date: today(), notes: "" });
   const [showLogin, setShowLogin] = useState(false);
   const [targetPlan, setTargetPlan] = useState(null);
   const [cameFromDashboard, setCameFromDashboard] = useState(false);
 
-  useEffect(() => { saveJSON("bk_expenses", expenses); }, [expenses]);
+  useEffect(() => { saveJSON("bb_expenses", expenses); }, [expenses]);
 
   const openRazorpay = (selectedPlan) => {
     if (!window.Razorpay) return alert("Payment gateway not loaded. Please refresh.");
@@ -93,11 +116,11 @@ export default function App() {
       key: RAZORPAY_KEY,
       amount,
       currency: "INR",
-      name: "BillKaro",
+      name: "Billby",
       description: "Pro Plan — ₹149/month",
       handler: async (response) => {
         await syncProStatus(user.uid, selectedPlan, response);
-        localStorage.setItem("bk_plan", selectedPlan);
+        localStorage.setItem("bb_plan", selectedPlan);
         setPlan(selectedPlan);
         setStep("preview");
       },
@@ -195,7 +218,7 @@ export default function App() {
   };
 
   const handleWhatsApp = () => {
-    const text = `*TAX INVOICE — ${invoiceNum}*\n*From:* ${seller.name}\n*To:* ${buyer.name}\n*Amount:* ${fmt(totals.total)}\nGenerated via BillKaro`;
+    const text = `*TAX INVOICE — ${invoiceNum}*\n*From:* ${seller.name}\n*To:* ${buyer.name}\n*Amount:* ${fmt(totals.total)}\nGenerated via Billby`;
     trackInvoiceEvent(invoiceNum, "SENT");
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   };

@@ -143,7 +143,7 @@ const DashboardView = ({
       const idx = archive.findIndex(i => i.invoiceNum === inv.invoiceNum);
       if (idx >= 0) {
         archive[idx].paidStatus = "paid";
-        localStorage.setItem("bk_invoice_archive", JSON.stringify(archive));
+        localStorage.setItem("bb_invoice_archive", JSON.stringify(archive));
         trackInvoiceEvent(inv.invoiceNum, "PAID");
         alert("Status updated locally!");
         setStats(prev => ({
@@ -328,7 +328,7 @@ const DashboardView = ({
                        <button 
                          style={{ background: "#25D366", border: "none", color: "#fff", padding: "8px 16px", borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
                          onClick={() => {
-                           const msg = `Hi ${inv.buyer?.name},\n\nThis is a friendly reminder for Invoice #${inv.invoiceNum} of ₹${total.toFixed(2)} which is currently pending. \n\nPlease let us know when we can expect the payment.\n\nThank you!\n- ${inv.seller?.name || "BillKaro User"}`;
+                           const msg = `Hi ${inv.buyer?.name},\n\nThis is a friendly reminder for Invoice #${inv.invoiceNum} of ₹${total.toFixed(2)} which is currently pending. \n\nPlease let us know when we can expect the payment.\n\nThank you!\n- ${inv.seller?.name || "Billby User"}`;
                            const url = `https://wa.me/${inv.buyer?.phone?.replace(/\D/g, "") || ""}?text=${encodeURIComponent(msg)}`;
                            window.open(url, "_blank");
                          }}
@@ -406,11 +406,11 @@ const DashboardView = ({
                                   // Remove from localStorage
                                   const archive = getLocalArchive();
                                   const updated = archive.filter(i => i.invoiceNum !== inv.invoiceNum);
-                                  localStorage.setItem("bk_invoice_archive", JSON.stringify(updated));
+                                  localStorage.setItem("bb_invoice_archive", JSON.stringify(updated));
                                   // Remove from tracking
-                                  const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+                                  const tracking = JSON.parse(localStorage.getItem("bb_invoice_tracking") || "{}");
                                   delete tracking[inv.invoiceNum];
-                                  localStorage.setItem("bk_invoice_tracking", JSON.stringify(tracking));
+                                  localStorage.setItem("bb_invoice_tracking", JSON.stringify(tracking));
                                   alert("Invoice deleted!");
                                   window.location.reload();
                                 }

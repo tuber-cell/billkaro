@@ -14,7 +14,7 @@ export function useAuthSync() {
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
-  const [plan, setPlan] = useState(() => localStorage.getItem("bk_plan") || "free");
+  const [plan, setPlan] = useState(() => localStorage.getItem("bb_plan") || "free");
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -23,7 +23,7 @@ export function useAuthSync() {
       if (!u) {
         setDbPro(false);
         setPlan("free");
-        localStorage.removeItem("bk_plan");
+        localStorage.removeItem("bb_plan");
       }
     });
     return unsub;
@@ -36,10 +36,10 @@ export function useAuthSync() {
         const data = docSnap.data();
         setDbPro(!!data.isPro);
         if (data.isPro) {
-          localStorage.setItem("bk_plan", data.plan || "pro");
+          localStorage.setItem("bb_plan", data.plan || "pro");
           setPlan(data.plan || "pro");
         } else {
-          localStorage.setItem("bk_plan", "free");
+          localStorage.setItem("bb_plan", "free");
           setPlan("free");
         }
       }
@@ -53,7 +53,7 @@ export function useAuthSync() {
 
   const handleLogout = () => {
     signOut(auth);
-    localStorage.removeItem("bk_plan");
+    localStorage.removeItem("bb_plan");
     setPlan("free");
     setDbPro(false);
   };

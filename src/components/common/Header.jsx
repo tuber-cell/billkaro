@@ -4,7 +4,7 @@ import { S, PLANS } from "./Constants";
 const Header = ({ step, setStep, user, dbPro, plan, handleLogout, setShowLogin, children }) => {
   return (
     <div style={S.header} className="bk-header">
-      <div style={S.logo} className="bk-header-logo">⬡ BillKaro</div>
+      <div style={S.logo} className="bk-header-logo">⬡ Billby</div>
       
       {children}
 

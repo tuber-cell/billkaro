@@ -1,5 +1,5 @@
 /**
- * GST Reconciliation Engine for BillKaro
+ * GST Reconciliation Engine for Billby
  * Matches saved invoices against GSTR-2B data to protect ITC
  */
 
@@ -12,17 +12,17 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 const fetchGSTR2B = async (userGSTIN) => {
   // In production, call actual GST portal API via GSP partner
   // For now, use localStorage "mock" GSTR-2B data
-  const mockData = JSON.parse(localStorage.getItem("bk_gstr2b_mock") || "[]");
+  const mockData = JSON.parse(localStorage.getItem("bb_gstr2b_mock") || "[]");
   return mockData;
 };
 
 // ── Matching Engine ─────────────────────────────────────────────────────────
-const matchInvoices = (billkaroInvoices, gstr2bData) => {
+const matchInvoices = (billbyInvoices, gstr2bData) => {
   const matches = [];
   const mismatches = [];
-  const unmatched = []; // In GSTR-2B but not in BillKaro
+  const unmatched = []; // In GSTR-2B but not in Billby
 
-  for (const inv of billkaroInvoices) {
+  for (const inv of billbyInvoices) {
     const match = gstr2bData.find(
       (g) => g.invoiceNum === inv.invoiceNum || g.invoiceNum === `${inv.invoicePrefix || "INV-"}${inv.invoiceNum}`
     );
@@ -44,7 +44,7 @@ const matchInvoices = (billkaroInvoices, gstr2bData) => {
           gstr2bMatch: match,
           status: "MISMATCH",
           difference: tolerance,
-          billkaroTotal: invTotal,
+          billbyTotal: invTotal,
           gstr2bTotal: match.totalValue,
         });
       }
@@ -53,9 +53,9 @@ const matchInvoices = (billkaroInvoices, gstr2bData) => {
     }
   }
 
-  // Find GSTR-2B entries not in BillKaro
+  // Find GSTR-2B entries not in Billby
   for (const g of gstr2bData) {
-    const found = billkaroInvoices.find(
+    const found = billbyInvoices.find(
       (inv) => inv.invoiceNum === g.invoiceNum || `${inv.invoicePrefix || "INV-"}${inv.invoiceNum}` === g.invoiceNum
     );
     if (!found) unmatched.push(g);
@@ -101,8 +101,8 @@ export function useGSTReconciliation() {
     setReconciliationError("");
 
     try {
-      // Step 1: Get all BillKaro invoices
-      let billkaroInvoices = [];
+      // Step 1: Get all Billby invoices
+      let billbyInvoices = [];
       const user = auth.currentUser;
 
       if (user) {
@@ -110,22 +110,22 @@ export function useGSTReconciliation() {
           const ref = collection(db, "users", user.uid, "invoices");
           const q = query(ref, orderBy("createdAt", "desc"));
           const snap = await getDocs(q);
-          billkaroInvoices = snap.docs.map((d) => d.data());
+          billbyInvoices = snap.docs.map((d) => d.data());
         } catch {
-          billkaroInvoices = getLocalArchive();
+          billbyInvoices = getLocalArchive();
         }
       } else {
-        billkaroInvoices = getLocalArchive();
+        billbyInvoices = getLocalArchive();
       }
 
-      if (billkaroInvoices.length === 0) {
+      if (billbyInvoices.length === 0) {
         setReconciliationError("No invoices found. Create invoices first.");
         setReconciling(false);
         return;
       }
 
       // Step 2: Fetch GSTR-2B data (simulated)
-      const sellerGSTIN = billkaroInvoices[0]?.seller?.gstin || "YOUR_GSTIN";
+      const sellerGSTIN = billbyInvoices[0]?.seller?.gstin || "YOUR_GSTIN";
       const gstr2bData = await fetchGSTR2B(sellerGSTIN);
 
       if (gstr2bData.length === 0) {
@@ -137,7 +137,7 @@ export function useGSTReconciliation() {
       }
 
       // Step 3: Match invoices
-      const { matches, mismatches, unmatched } = matchInvoices(billkaroInvoices, gstr2bData);
+      const { matches, mismatches, unmatched } = matchInvoices(billbyInvoices, gstr2bData);
 
       // Step 4: Calculate ITC risk
       const itcRisk = calculateITCRisk(mismatches);
@@ -155,10 +155,10 @@ export function useGSTReconciliation() {
         recommendations.push({
           priority: "MEDIUM",
           action: "Review Missing Invoices",
-          detail: `${unmatched.length} invoice(s) in GSTR-2B but not in BillKaro. Could indicate supplier fraud.`,
+          detail: `${unmatched.length} invoice(s) in GSTR-2B but not in Billby. Could indicate supplier fraud.`,
         });
       }
-      if (matches.length === billkaroInvoices.length && unmatched.length === 0) {
+      if (matches.length === billbyInvoices.length && unmatched.length === 0) {
         recommendations.push({
           priority: "LOW",
           action: "All Clear",
@@ -168,7 +168,7 @@ export function useGSTReconciliation() {
 
       setReconciliationResults({
         timestamp: new Date().toISOString(),
-        totalInvoices: billkaroInvoices.length,
+        totalInvoices: billbyInvoices.length,
         matchedCount: matches.length,
         mismatchedCount: mismatches.length,
         unmatchedCount: unmatched.length,
@@ -191,7 +191,7 @@ export function useGSTReconciliation() {
     if (!reconciliationResults) return;
 
     const report = {
-      title: "BillKaro GST Reconciliation Report",
+      title: "Billby GST Reconciliation Report",
       generatedAt: reconciliationResults.timestamp,
       summary: {
         totalInvoices: reconciliationResults.totalInvoices,
@@ -203,7 +203,7 @@ export function useGSTReconciliation() {
       },
       mismatches: reconciliationResults.mismatches.map((inv) => ({
         invoiceNum: inv.invoiceNum,
-        billkaroTotal: inv.billkaroTotal,
+        billbyTotal: inv.billbyTotal,
         gstr2bTotal: inv.gstr2bTotal,
         difference: inv.difference,
         buyer: inv.buyer?.name,

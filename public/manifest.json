@@ -1,6 +1,6 @@
 {
-    "name": "BillKaro - GST Invoice Generator",
-    "short_name": "BillKaro",
+    "name": "Billby - GST Invoice Generator",
+    "short_name": "Billby",
     "description": "Free GST invoice generator for Indian businesses",
     "start_url": "/",
     "display": "standalone",

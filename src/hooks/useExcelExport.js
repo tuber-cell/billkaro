@@ -86,7 +86,7 @@ export function useExcelExport() {
       XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
 
       // ── 5. Trigger browser download ───────────────────────────────────────
-      const fileName = `BillKaro_Invoices_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const fileName = `Billby_Invoices_${new Date().toISOString().slice(0, 10)}.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
     } catch (err) {

@@ -13,7 +13,7 @@ export const INVOICE_STATUSES = {
 
 export const trackInvoiceEvent = (invoiceNum, event) => {
     try {
-        const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+        const tracking = JSON.parse(localStorage.getItem("bb_invoice_tracking") || "{}");
         if (!tracking[invoiceNum]) {
             tracking[invoiceNum] = { events: [], status: "DRAFT" };
         }
@@ -22,14 +22,14 @@ export const trackInvoiceEvent = (invoiceNum, event) => {
             timestamp: new Date().toISOString()
         });
         tracking[invoiceNum].status = event;
-        localStorage.setItem("bk_invoice_tracking", JSON.stringify(tracking));
+        localStorage.setItem("bb_invoice_tracking", JSON.stringify(tracking));
     } catch (err) {
         console.warn("Failed to track invoice event:", err);
     }
 };
 
 export const getInvoiceStatus = (invoiceNum) => {
-    const tracking = JSON.parse(localStorage.getItem("bk_invoice_tracking") || "{}");
+    const tracking = JSON.parse(localStorage.getItem("bb_invoice_tracking") || "{}");
     return tracking[invoiceNum]?.status || "DRAFT";
 };
 
@@ -37,19 +37,19 @@ export function useInvoiceForm() {
   const [invoiceNum, setInvoiceNum] = useState(invoiceNo());
   const [invoiceDate, setInvoiceDate] = useState(today());
   const [dueDate, setDueDate] = useState("");
-  const [supplyType, setSupplyType] = useState(() => localStorage.getItem("bk_supply_type") || "intra");
-  const [docType, setDocType] = useState(() => localStorage.getItem("bk_doc_type") || "Tax Invoice");
-  const [invoicePrefix, setInvoicePrefix] = useState(() => localStorage.getItem("bk_inv_prefix") || "INV-");
-  const [watermark, setWatermark] = useState(() => localStorage.getItem("bk_watermark") || "");
+  const [supplyType, setSupplyType] = useState(() => localStorage.getItem("bb_supply_type") || "intra");
+  const [docType, setDocType] = useState(() => localStorage.getItem("bb_doc_type") || "Tax Invoice");
+  const [invoicePrefix, setInvoicePrefix] = useState(() => localStorage.getItem("bb_inv_prefix") || "INV-");
+  const [watermark, setWatermark] = useState(() => localStorage.getItem("bb_watermark") || "");
   const [notes, setNotes] = useState("Thank you for your business!");
   const [paidStatus, setPaidStatus] = useState("unpaid");
-  const [showUpiQr, setShowUpiQr] = useState(() => localStorage.getItem("bk_show_qr") === "true");
+  const [showUpiQr, setShowUpiQr] = useState(() => localStorage.getItem("bb_show_qr") === "true");
   
-  const [sellerLogo, setSellerLogo] = useState(() => localStorage.getItem("bk_seller_logo") || "");
-  const [sellerSignature, setSellerSignature] = useState(() => localStorage.getItem("bk_seller_sig") || "");
+  const [sellerLogo, setSellerLogo] = useState(() => localStorage.getItem("bb_seller_logo") || "");
+  const [sellerSignature, setSellerSignature] = useState(() => localStorage.getItem("bb_seller_sig") || "");
   
-  const [savedSeller, setSavedSeller] = useState(() => loadJSON("bk_seller", null));
-  const [savedClients, setSavedClients] = useState(() => loadJSON("bk_clients", []));
+  const [savedSeller, setSavedSeller] = useState(() => loadJSON("bb_seller", null));
+  const [savedClients, setSavedClients] = useState(() => loadJSON("bb_clients", []));
 
   const [seller, setSeller] = useState(savedSeller || { 
     name: "", gstin: "", address: "", city: "", state: "Maharashtra", pin: "", 
@@ -63,13 +63,13 @@ export function useInvoiceForm() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    localStorage.setItem("bk_supply_type", supplyType);
-    localStorage.setItem("bk_doc_type", docType);
-    localStorage.setItem("bk_inv_prefix", invoicePrefix);
-    localStorage.setItem("bk_watermark", watermark);
-    localStorage.setItem("bk_seller_logo", sellerLogo);
-    localStorage.setItem("bk_seller_sig", sellerSignature);
-    localStorage.setItem("bk_show_qr", showUpiQr);
+    localStorage.setItem("bb_supply_type", supplyType);
+    localStorage.setItem("bb_doc_type", docType);
+    localStorage.setItem("bb_inv_prefix", invoicePrefix);
+    localStorage.setItem("bb_watermark", watermark);
+    localStorage.setItem("bb_seller_logo", sellerLogo);
+    localStorage.setItem("bb_seller_sig", sellerSignature);
+    localStorage.setItem("bb_show_qr", showUpiQr);
   }, [supplyType, docType, invoicePrefix, watermark, sellerLogo, sellerSignature, showUpiQr]);
 
   // Smart GST Logic
@@ -135,14 +135,14 @@ export function useInvoiceForm() {
     setItems([emptyItem()]); setErrors({});
   };
 
-  const handleSaveSeller = () => { saveJSON("bk_seller", seller); setSavedSeller(seller); alert("✅ Profile saved!"); };
+  const handleSaveSeller = () => { saveJSON("bb_seller", seller); setSavedSeller(seller); alert("✅ Profile saved!"); };
   const handleSaveClient = () => {
     if (!buyer.name) return alert("Enter client name");
     const updated = [...savedClients.filter(c => c.name !== buyer.name), buyer];
-    setSavedClients(updated); saveJSON("bk_clients", updated); alert(`✅ Client saved!`);
+    setSavedClients(updated); saveJSON("bb_clients", updated); alert(`✅ Client saved!`);
   };
   const handleLoadClient = (name) => { const c = savedClients.find(cl => cl.name === name); if (c) setBuyer(c); };
-  const handleDeleteClient = (name) => { const updated = savedClients.filter(c => c.name !== name); setSavedClients(updated); saveJSON("bk_clients", updated); };
+  const handleDeleteClient = (name) => { const updated = savedClients.filter(c => c.name !== name); setSavedClients(updated); saveJSON("bb_clients", updated); };
 
   return {
     invoiceNum, setInvoiceNum, invoiceDate, setInvoiceDate, dueDate, setDueDate,

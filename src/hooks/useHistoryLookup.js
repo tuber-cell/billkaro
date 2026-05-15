@@ -1,5 +1,5 @@
 // ── useHistoryLookup.js ───────────────────────────────────────────────────────
-// Smart Suggestions Engine for BillKaro
+// Smart Suggestions Engine for Billby
 // Analyzes last 5 invoices per buyer and provides intelligent autofill + warnings
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -8,7 +8,7 @@ import { db } from "../lib/firebase";
 import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const HISTORY_KEY     = "bk_invoice_history"; // localStorage key
+const HISTORY_KEY     = "bb_invoice_history"; // localStorage key
 const MAX_HISTORY     = 50;                   // max invoices stored total
 const LOOKUP_LIMIT    = 5;                    // last N invoices analyzed per buyer
 const MATCH_THRESHOLD = 0;                  // Show immediately (0)

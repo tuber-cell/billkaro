@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/billkaro.ico?v=3" />
-    <link rel="icon" type="image/svg+xml" href="/billkaro.svg?v=3" />
+    <link rel="icon" href="/billby.ico?v=3" />
+    <link rel="icon" type="image/svg+xml" href="/billby.svg?v=3" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon_32x32.png?v=3" />
     <link rel="apple-touch-icon" sizes="192x192" href="/favicon_192x192.png?v=3" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BillKaro - Free GST Invoice Generator</title>
+    <title>Billby - Free GST Invoice Generator</title>
     <meta name="description" content="Generate GST compliant invoices instantly. Free — No login needed for first 3 invoices. Secure, fast, and professional.">
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0A1628" />
@@ -22,7 +22,27 @@
     <script>
       if ("serviceWorker" in navigator) {
           window.addEventListener("load", () => {
-              navigator.serviceWorker.register("/sw.js");
+              navigator.serviceWorker.register("/sw.js").then((reg) => {
+                  reg.onupdatefound = () => {
+                      const installingWorker = reg.installing;
+                      installingWorker.onstatechange = () => {
+                          if (installingWorker.state === "installed") {
+                              if (navigator.serviceWorker.controller) {
+                                  // New update available
+                                  console.log("New content available; please refresh.");
+                              }
+                          }
+                      };
+                  };
+              });
+          });
+
+          // Refresh the page when the new service worker takes control
+          let refreshing = false;
+          navigator.serviceWorker.addEventListener("controllerchange", () => {
+              if (refreshing) return;
+              refreshing = true;
+              window.location.reload();
           });
       }
     </script>

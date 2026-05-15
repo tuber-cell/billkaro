@@ -3,7 +3,7 @@
  *
  * Source of truth strategy:
  *  - Logged-in users  → Firestore: users/{uid}/invoices  (full history)
- *  - Guest users      → localStorage: bk_invoice_archive (full history)
+ *  - Guest users      → localStorage: bb_invoice_archive (full history)
  *
  * The hook ALWAYS merges the current live invoice from the form into the
  * archive before exporting, so it works correctly even on the very first use.
@@ -28,7 +28,7 @@ const STATE_CODES = {
 };
 
 // ── Local Storage helpers ─────────────────────────────────────────────────────
-const LS_KEY = "bk_invoice_archive";
+const LS_KEY = "bb_invoice_archive";
 
 export function getLocalArchive() {
   try {
@@ -193,7 +193,7 @@ export function useArchiveExport() {
 
       XLSX.utils.book_append_sheet(workbook, worksheet, "Master Archive");
       
-      const fileName = `BillKaro_Archive_${new Date().toISOString().slice(0, 10)}_${validInvoices.length}inv.xlsx`;
+      const fileName = `Billby_Archive_${new Date().toISOString().slice(0, 10)}_${validInvoices.length}inv.xlsx`;
       XLSX.writeFile(workbook, fileName);
 
     } catch (err) {
@@ -368,7 +368,7 @@ export function useArchiveExport() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `BillKaro_GSTR1_${now.toLocaleString('default', { month: 'short' })}_${now.getFullYear()}.json`;
+      a.download = `Billby_GSTR1_${now.toLocaleString('default', { month: 'short' })}_${now.getFullYear()}.json`;
       a.click();
 
     } catch (err) {

@@ -21,7 +21,7 @@ const UpgradeView = ({
             <div style={{ color: "#8899aa", fontWeight: 700, fontSize: 13, marginBottom: 8 }}>FREE</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: "#e8edf2", marginBottom: 4 }}>₹0</div>
             <div style={{ color: "#8899aa", fontSize: 12, marginBottom: 20 }}>10 invoices total</div>
-            {["10 invoices", "Basic template", "BillKaro watermark"].map(f => (
+            {["10 invoices", "Basic template", "Billby watermark"].map(f => (
               <div key={f} style={{ color: "#8899aa", fontSize: 13, marginBottom: 8 }}>✓ {f}</div>
             ))}
             <div style={{ marginTop: 20, color: "#ef4444", fontSize: 13, fontWeight: 600 }}>Current Plan</div>

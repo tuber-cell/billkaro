@@ -5,7 +5,7 @@ const FREE_LIMIT = 10;
 
 export function useDailyLimit() {
   const [dailyCount, setDailyCount] = useState(() => {
-    const saved = localStorage.getItem("bk_daily_v2");
+    const saved = localStorage.getItem("bb_daily_v2");
     if (!saved) return 0;
     try {
       const { resetDate, count } = JSON.parse(saved);
@@ -18,7 +18,7 @@ export function useDailyLimit() {
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem("bk_daily_v2");
+    const saved = localStorage.getItem("bb_daily_v2");
     let resetDate = new Date().toISOString();
     try {
       if (saved) {
@@ -29,7 +29,7 @@ export function useDailyLimit() {
         if (daysDiff < RESET_DAYS) resetDate = parsed.resetDate;
       }
     } catch {}
-    localStorage.setItem("bk_daily_v2", JSON.stringify({ 
+    localStorage.setItem("bb_daily_v2", JSON.stringify({ 
       resetDate, 
       count: dailyCount 
     }));

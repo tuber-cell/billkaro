@@ -112,7 +112,7 @@ const AuthModal = ({
               {isSignup ? "Create Account" : "Welcome Back"}
             </h2>
             <p style={{ color: "#8899aa", fontSize: 13, margin: 0 }}>
-              {isSignup ? "Join BillKaro for professional invoicing" : "Continue your professional journey"}
+              {isSignup ? "Join Billby for professional invoicing" : "Continue your professional journey"}
             </p>
           </div>
           <button style={{ background: "rgba(255,255,255,0.05)", border: "none", color: "#8899aa", cursor: "pointer", width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setShowLogin(false)}>✕</button>
@@ -179,12 +179,12 @@ const AuthModal = ({
           </div>
 
           <button type="submit" disabled={loading} style={{ ...S.btnPrimary, width: "100%", height: 50, fontSize: 15, borderRadius: 12, boxShadow: "0 8px 24px rgba(212,175,55,0.2)" }}>
-            {loading ? "Please wait..." : (isSignup ? "Create My Account" : "Sign In to BillKaro")}
+            {loading ? "Please wait..." : (isSignup ? "Create My Account" : "Sign In to Billby")}
           </button>
         </form>
 
         <p style={{ textAlign: "center", color: "#8899aa", fontSize: 12, marginTop: 24, margin: "24px 0 0" }}>
-          By continuing, you agree to BillKaro's Terms of Service.
+          By continuing, you agree to Billby's Terms of Service.
         </p>
       </div>
     </div>

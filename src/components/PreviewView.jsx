@@ -14,11 +14,11 @@ const PreviewView = ({
   trackInvoiceEvent, getInvoiceStatus, INVOICE_STATUSES
 }) => {
   const [showEwayHelper, setShowEwayHelper] = useState(false);
-  const [templateId, setTemplateId] = useState(() => localStorage.getItem("bk_template_id") || "executive");
+  const [templateId, setTemplateId] = useState(() => localStorage.getItem("bb_template_id") || "executive");
 
   const changeTemplate = (id) => {
     setTemplateId(id);
-    localStorage.setItem("bk_template_id", id);
+    localStorage.setItem("bb_template_id", id);
   };
 
   useEffect(() => {
@@ -91,7 +91,7 @@ const PreviewView = ({
 
       {/* Toolbar - Use Header for consistent nav, but keep print actions */}
       <div className="print-actions">
-        <div style={{ fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: 18, marginRight: 16 }}>⬡ BillKaro</div>
+        <div style={{ fontFamily: "'Playfair Display', serif", color: "#d4af37", fontSize: 18, marginRight: 16 }}>⬡ Billby</div>
         
         <div style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4, marginRight: "auto" }}>
             <button style={{ background: step === "form" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "form" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} onClick={() => setStep("form")}>📝 Create</button>
@@ -262,7 +262,7 @@ const PreviewView = ({
           INVOICE_STATUSES={INVOICE_STATUSES}
         />
         <div style={{ background: "rgba(15, 25, 35, 0.03)", padding: "10px 48px", textAlign: "center", fontSize: 9, color: "#8899aa", borderTop: "1px solid #e9ecef", letterSpacing: "0.05em" }}>
-          Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>BillKaro</span> · Secure GST Compliant Digital Invoice
+          Generated with <span style={{ color: "#d4af37", fontWeight: 700 }}>Billby</span> · Secure GST Compliant Digital Invoice
         </div>
       </div>
 

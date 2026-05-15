@@ -77,7 +77,7 @@ const ReconciliationView = ({
             <div style={{ color: "#ef4444", marginTop: 16, fontSize: 13 }}>{reconciliationError}</div>
           )}
           <div style={{ color: "#445566", marginTop: 20, fontSize: 11 }}>
-            No live GSTR-2B data? Add mock data in localStorage key "bk_gstr2b_mock" for testing.
+            No live GSTR-2B data? Add mock data in localStorage key "bb_gstr2b_mock" for testing.
           </div>
         </div>
       )}
@@ -137,7 +137,7 @@ const ReconciliationView = ({
                 <table className="mobile-table-to-cards" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                   <thead>
                     <tr style={{ background: "rgba(239,68,68,0.05)" }}>
-                      {["Invoice #", "Buyer", "Date", "BillKaro Total", "GSTR-2B Total", "Difference", "Status"].map((h) => (
+                      {["Invoice #", "Buyer", "Date", "Billby Total", "GSTR-2B Total", "Difference", "Status"].map((h) => (
                         <th key={h} style={{ padding: "10px 12px", color: "#8899aa", textAlign: "left", fontWeight: 600 }}>
                           {h}
                         </th>
@@ -150,8 +150,8 @@ const ReconciliationView = ({
                         <td data-label="Invoice #" style={{ padding: "10px 12px", color: "#d4af37", fontWeight: 600 }}>{inv.invoiceNum}</td>
                         <td data-label="Buyer" style={{ padding: "10px 12px", color: "#e8edf2" }}>{inv.buyer?.name || "N/A"}</td>
                         <td data-label="Date" style={{ padding: "10px 12px", color: "#8899aa" }}>{inv.invoiceDate}</td>
-                        <td data-label="BillKaro" style={{ padding: "10px 12px", color: "#e8edf2" }}>
-                          {inv.billkaroTotal ? `₹${inv.billkaroTotal.toLocaleString("en-IN")}` : "—"}
+                        <td data-label="Billby" style={{ padding: "10px 12px", color: "#e8edf2" }}>
+                          {inv.billbyTotal ? `₹${inv.billbyTotal.toLocaleString("en-IN")}` : "—"}
                         </td>
                         <td data-label="GSTR-2B" style={{ padding: "10px 12px", color: "#e8edf2" }}>
                           {inv.gstr2bTotal ? `₹${inv.gstr2bTotal.toLocaleString("en-IN")}` : "—"}
