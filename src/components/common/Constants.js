@@ -27,11 +27,11 @@ export const DAILY_FREE_LIMIT = 10;
 export const FREE_LIMIT = 10;
 
 export const S = {
-  page: { minHeight: "100vh", background: "linear-gradient(135deg, #0f1923 0%, #162032 50%, #0f1923 100%)", fontFamily: "'DM Sans', sans-serif", padding: "0 0 60px" },
-  header: { background: "rgba(15, 25, 35, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(212,175,55,0.3)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100 },
+  page: { width: "100%", maxWidth: "100%", minHeight: "100vh", background: "linear-gradient(135deg, #0f1923 0%, #162032 50%, #0f1923 100%)", fontFamily: "'DM Sans', sans-serif", padding: "0 0 60px", overflowX: "hidden", boxSizing: "border-box" },
+  header: { width: "100%", maxWidth: "100%", background: "rgba(15, 25, 35, 0.8)", backdropFilter: "blur(12px)", borderBottom: "1px solid rgba(212,175,55,0.3)", padding: "16px 40px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 100, boxSizing: "border-box" },
   logo: { fontFamily: "'Playfair Display', serif", fontSize: 24, color: "#d4af37", letterSpacing: "0.05em", fontWeight: 700 },
   badge: { background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.3)", color: "#d4af37", padding: "4px 12px", borderRadius: 20, fontSize: 11, letterSpacing: "0.1em", fontWeight: 600 },
-  container: { maxWidth: 1000, margin: "0 auto", padding: "40px 20px" },
+  container: { width: "100%", maxWidth: 1000, margin: "0 auto", padding: "40px 20px", boxSizing: "border-box" },
   card: { background: "rgba(255,255,255,0.03)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "28px 32px", marginBottom: 24, transition: "transform 0.3s ease, box-shadow 0.3s ease" },
   secTitle: { fontFamily: "'Playfair Display', serif", fontSize: 18, color: "#d4af37", marginBottom: 24, paddingBottom: 10, borderBottom: "1px solid rgba(212,175,55,0.2)", display: "flex", alignItems: "center", gap: 10 },
   label: { display: "block", fontSize: 11, color: "#8899aa", marginBottom: 8, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 },
