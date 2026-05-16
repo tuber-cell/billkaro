@@ -23,6 +23,7 @@ const UpgradeView = React.lazy(() => import("./components/UpgradeView"));
 const PreviewView = React.lazy(() => import("./components/PreviewView"));
 import AuthModal from "./components/AuthModal";
 const ReconciliationView = React.lazy(() => import("./components/ReconciliationView"));
+import BottomNavBar from "./components/common/BottomNavBar";
 
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { hasError: false, error: null }; }
