@@ -3,22 +3,25 @@ import { S, PLANS } from "./Constants";
 
 const Header = ({ step, setStep, user, dbPro, plan, handleLogout, setShowLogin, children }) => {
   return (
-    <div style={S.header} className="bk-header">
-      <div style={S.logo} className="bk-header-logo">⬡ Billby</div>
+    <div style={S.header} className="bk-header no-print">
+      <div style={S.logo} className="bk-header-logo">
+        <span style={{ color: "#d4af37", marginRight: 8 }}>⬡</span>
+        Billby
+      </div>
       
       {children}
 
-      <div className="header-nav" style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}>
+      <div className="header-nav" style={{ display: "flex", background: "rgba(255,255,255,0.04)", borderRadius: 12, padding: 4, overflowX: "auto", maxWidth: "100%" }}>
         <button 
-          style={{ background: step === "form" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "form" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} 
+          style={{ background: step === "form" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "form" ? "#d4af37" : "#8899aa", padding: "8px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} 
           onClick={() => setStep("form")}
         >📝 Create</button>
         <button 
-          style={{ background: step === "expenses" ? "rgba(20,184,166,0.15)" : "transparent", border: "none", color: step === "expenses" ? "#14b8a6" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} 
+          style={{ background: step === "expenses" ? "rgba(20,184,166,0.15)" : "transparent", border: "none", color: step === "expenses" ? "#14b8a6" : "#8899aa", padding: "8px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} 
           onClick={() => setStep("expenses")}
         >💸 Expenses</button>
         <button 
-          style={{ background: step === "dashboard" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "dashboard" ? "#d4af37" : "#8899aa", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }} 
+          style={{ background: step === "dashboard" ? "rgba(212,175,55,0.15)" : "transparent", border: "none", color: step === "dashboard" ? "#d4af37" : "#8899aa", padding: "8px 16px", borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }} 
           onClick={() => setStep("dashboard")}
         >📊 Insights</button>
       </div>

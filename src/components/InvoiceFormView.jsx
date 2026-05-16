@@ -57,27 +57,25 @@ const InvoiceFormView = ({
         handleLogout={handleLogout} 
         setShowLogin={setShowLogin}
       >
-        {/* All header info grouped together */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div style={{ ...S.badge, borderColor: (PLANS[plan]?.color || "#8899aa") + "88", color: PLANS[plan]?.color || "#8899aa" }}>
-            {(PLANS[plan]?.label || "Free").toUpperCase()} PLAN
+        {/* Mobile-optimized Header Children */}
+        <div className="bk-header-info" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ ...S.badge, borderColor: (PLANS[plan]?.color || "#8899aa") + "88", color: PLANS[plan]?.color || "#8899aa", padding: "2px 10px", fontSize: 10 }}>
+              {(PLANS[plan]?.label || "Free").toUpperCase()} PLAN
+            </div>
+            {!isPro && <div style={{ color: "#8899aa", fontSize: 11 }}>{dailyLeft} left</div>}
           </div>
-          {!isPro && <div style={{ color: "#8899aa", fontSize: 12 }}>{dailyLeft} daily invoice{dailyLeft !== 1 ? "s" : ""} left</div>}
-        </div>
-
-        {/* New Quick Stats next to badge */}
-        <div style={{ display: "flex", gap: 12, marginLeft: 8 }}>
-          <div style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 8, padding: "4px 12px", display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ color: "#34d399", fontSize: 11, fontWeight: 700 }}>📂 {archiveCount} Saved</span>
+          <div style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.2)", borderRadius: 6, padding: "2px 10px" }}>
+            <span style={{ color: "#34d399", fontSize: 10, fontWeight: 700 }}>📂 {archiveCount} Saved</span>
           </div>
         </div>
       </Header>
 
       <div style={S.container} className="bk-container bk-form-bottom-pad">
 
-        <div style={S.card} className="hover-card">
-          <div style={S.secTitle}><span>📋</span> Invoice Details</div>
-          <div className="grid-responsive-3" style={{ gap: 20 }}>
+        <div style={{ ...S.card, marginBottom: 16 }} className="bk-card hover-card">
+          <div style={{ ...S.secTitle, textAlign: "center", justifyContent: "center" }}><span>📋</span> Invoice Details</div>
+          <div className="grid-responsive-3" style={{ gap: 16 }}>
             <div>
               <label style={S.label}>Invoice Number</label>
               <input style={{ ...S.input, color: "#d4af37", fontWeight: 700 }} value={invoiceNum} readOnly />
@@ -95,9 +93,9 @@ const InvoiceFormView = ({
           <div className="grid-responsive-2" style={{ gap: 20, marginTop: 24 }}>
             <div>
               <label style={S.label}>Supply Type</label>
-              <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", gap: 10, marginTop: 4, flexWrap: "wrap" }}>
                 {[["intra", "Intra-State (CGST+SGST)"], ["inter", "Inter-State (IGST)"]].map(([val, lbl]) => (
-                  <label key={val} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", color: supplyType === val ? "#d4af37" : "#8899aa", fontSize: 12, padding: "8px 14px", background: supplyType === val ? "rgba(212,175,55,0.1)" : "transparent", border: `1px solid ${supplyType === val ? "rgba(212,175,55,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: 8 }}>
+                  <label key={val} style={{ flex: 1, minWidth: 140, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", color: supplyType === val ? "#d4af37" : "#8899aa", fontSize: 12, padding: "10px 14px", background: supplyType === val ? "rgba(212,175,55,0.1)" : "transparent", border: `1px solid ${supplyType === val ? "rgba(212,175,55,0.4)" : "rgba(255,255,255,0.08)"}`, borderRadius: 8 }}>
                     <input type="radio" value={val} checked={supplyType === val} onChange={() => setSupplyType(val)} style={{ accentColor: "#d4af37" }} />
                     {lbl}
                   </label>
